@@ -19,13 +19,13 @@
   "content_scripts": [
       {
           "matches": ["https://webflow.com/design/*"],
-          "js": ["js/content_script.js", "gvm/js/button_script.js", "gvm/js/toggle_script.js"],
+          "js": ["js/content_script.js", "gvm/button_script.js"],
           "css": ["gvm/stylesheet.css"]
       }
   ],
   "minimum_chrome_version": "93",
   "background": {
-    "service_worker": "gvm/js/background_wrapper.js"
+    "service_worker": "gvm/background_wrapper.js"
   },
   
   "permissions": [

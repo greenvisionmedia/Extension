@@ -5719,7 +5719,7 @@
       return {
         c() {
           appBadge = Object(options.l)("div");
-          appBadge.innerHTML = '<svg data-icon="CircleCheckLarge" aria-hidden="true" focusable="false" width="40" height="100" viewBox="0 0 20 20" class="bem-Svg bem-TopBar_Body_SyncStatus_Icon bem-TopBar_Body_Button_Icon" style="transform: translate(0px, 0px); color: rgba(42, 217, 134, 0.6);"><path fill="currentColor" d="M10 1a9 9 0 100 18 9 9 0 000-18zm-.935 13.46l-4.097-3.994 1.396-1.432 2.57 2.506 4.556-5.315 1.518 1.302-5.943 6.933z"></path></svg> \n    <p style="color: #fff; font-size: 32px; margin: 0;">Awesome!</p> \n    <p style="color: #DBDBDB; font-size: 22px; margin: 0;">The page will automatically refresh in 3 seconds!</p> \n    <p style="color: #DBDBDB; font-size: 22px; margin: 0;">After the load you can export your project and upload it to the Udesly App!</p>';
+          appBadge.innerHTML = '<svg data-icon="CircleCheckLarge" aria-hidden="true" focusable="false" width="40" height="100" viewBox="0 0 20 20" class="bem-Svg bem-TopBar_Body_SyncStatus_Icon bem-TopBar_Body_Button_Icon" style="transform: translate(0px, 0px); color: rgba(42, 217, 134, 0.6);"><path fill="currentColor" d="M10 1a9 9 0 100 18 9 9 0 000-18zm-.935 13.46l-4.097-3.994 1.396-1.432 2.57 2.506 4.556-5.315 1.518 1.302-5.943 6.933z"></path></svg> \n    <p style="color: #fff; font-size: 32px; margin: 0;">Awesome!</p> \n    <p style="color: #DBDBDB; font-size: 22px; margin: 0;">The page will automatically refresh in 3 seconds!</p>';
           Object(options.e)(appBadge, "class", "udesly-flex udesly-flex__column");
         },
         m(n, right) {

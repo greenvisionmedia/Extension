@@ -13,9 +13,13 @@
         <h1>PUSHERMAN</h1>
         <p>Drag your files from the download bar:</p>
         <form class="form_component">
-            <input type="file" class="form_input-code"></input>
-            <input type="file" class="form_input-code"></input>
-            <input type="submit" class="form_submit"></input>
+            <label>Site Code (.zip file)</label>
+            <input type="file" class="form_input-site"></input>
+            <label>Udesly Config (.udesly-config file)</label>
+            <input type="file" class="form_input-config"></input>
+            <label>GVM Config (.zip file)</label>
+            <input type="file" class="form_input-deploy"></input>
+            <input type="submit" class="form_submit" value="Publish!"></input>
         </form>  
     </main>
 	<script src="index.js"></script>
