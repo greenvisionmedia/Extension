@@ -6,17 +6,15 @@
                 <div></div>
                 <div></div>
             </div>
-            <div class="dialog_title"> GVM Pusherman </div>
+            <div class="dialog_title"> GVM Pusherman Configurator </div>
         </div>
-        <div class="dialog_subtitle"> Enter your GitHub organization/username: </div>
+        <a href="#" target="_blank" id="a">Go to site repository<svg width="11" height="11"><path fill="currentColor" d="M5 1v1h3.293L4.646 5.646l.707.707L9 2.707V6h1V1H5zm2 8H2V4h2V3H2c-.55 0-1 .45-1 1v5c0 .55.45 1 1 1h5c.55 0 1-.45 1-1V7H7v2z"></path></svg></a>
         <form method="get" class="dialog_form dialog_container" action="">
-            <input type="text" class="dialog_form-text dialog_domain" placeholder="i.e greenvision.media">
-            <input type="text" class="dialog_form-text dialog_site-code" placeholder="i.e greenvision.media">
-            <input type="button" class="dialog_button" id="submit-input" value="Submit">
+            <input type="text" class="dialog_form-text" name="domain" placeholder="i.e greenvision.media">
+            <label>Enter your release domain:</label>
+            <input type="text" class="dialog_form-text" name="site-code" placeholder="i.e gvm">
+            <label>Enter your GVM site code:</label>
+            <input type="submit" class="dialog_form-submit" value="Submit">
         </form>
-        <div id="repo-container" class="dialog_container">
-            <input type="text" class="dialog-text" value="" id="repository" readonly="true"></input>
-            <input type="button" class="dialog-button" value="Path Stored" id="restart"></input>
-        </div>
     </div>
 </div>
