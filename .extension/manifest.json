@@ -3,7 +3,7 @@
 
   "manifest_version": 3,
   "name": "Pusherman",
-  "description": "i aint clean bad machine super cool super mean",
+  "description": "I aint clean bad machine super cool super mean",
   "version": "1.0.13",
   "icons": {
     "16": "/icons/icon16.png",
@@ -19,7 +19,7 @@
   "content_scripts": [
       {
           "matches": ["https://webflow.com/design/*"],
-          "js": ["js/content_script.js", "gvm/button_script.js"],
+          "js": ["js/content_script.js", "gvm/content.js"],
           "css": ["gvm/stylesheet.css"]
       }
   ],
