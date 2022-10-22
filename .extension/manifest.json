@@ -1,41 +1,29 @@
 {
-"update_url": "https://clients2.google.com/service/update2/crx",
-
   "manifest_version": 3,
   "name": "Pusherman",
-  "description": "I aint clean bad machine super cool super mean",
-  "version": "1.0.13",
+  "description": "Aint I clean bad machine super cool super mean",
+  "version": "0",
   "icons": {
     "16": "/icons/icon16.png",
     "32": "/icons/icon32.png",
     "48": "/icons/icon48.png",
     "128": "/icons/icon128.png"
   },
-  "action": {
-    "default_icon": 
-      "icon.png",
-    "default_title": "IM YO PUSHERMAN"
-  },
   "content_scripts": [
-      {
-          "matches": ["https://webflow.com/design/*"],
-          "js": ["js/content_script.js", "gvm/content.js"],
-          "css": ["gvm/stylesheet.css"]
-      }
+    {
+      "matches": ["https://webflow.com/design/*"],
+      "js": ["public/content.min.js"],
+      "css": ["public/stylesheet.min.css"]
+    }
   ],
-  "minimum_chrome_version": "93",
   "background": {
-    "service_worker": "gvm/background_wrapper.js"
+    "service_worker": "public/background.min.js"
   },
-  
   "permissions": [
-    "scripting"
+    "scripting",
+    "storage"
   ],
   "host_permissions": [
     "https://webflow.com/design/*"
-  ],
-  "web_accessible_resources":  [{
-      "resources": ["js/udesly-main.js"],
-      "matches": ["https://webflow.com/*"]
-  }]
+  ]
 }
