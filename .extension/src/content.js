@@ -5,7 +5,6 @@ let configData = chrome.storage.sync.get([
   'PROJECT',
   'DOMAIN',
   'SITECODE',
-  'PROJECT',
   'PASSWORD', //Potentially unwise to store this here...
   'STAGING'
 ])
@@ -51,7 +50,7 @@ function injectModal(exportButton) {
       'password': document.getElementById('password')
     };
 
-  setDefaults(configData, inputs);
+  setDefaults(inputs, configData);
   setSiteURL(site, configData);
   setRepoURL(repo, configData);
 
@@ -106,7 +105,7 @@ function injectModal(exportButton) {
     restart.classList.toggle('on');
   });
 
-  function setDefaults(configData, inputs) {
+  function setDefaults(inputs, configData) {
     inputs.domain.value = configData.DOMAIN;
     inputs.siteCode.value = configData.SITECODE;
     inputs.password.value = configData.PASSWORD;
@@ -121,7 +120,7 @@ function injectModal(exportButton) {
   }
 
   //Write and store configuration data
-  function handleConfig(configData, inputs) {
+  function handleConfig(inputs, configData) {
     let isStaging = true;
     if (inputs.staging.classList.contains('on')) {
       isStaging = true;
