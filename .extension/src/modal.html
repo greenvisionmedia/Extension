@@ -10,8 +10,8 @@
     </div>
 </div>
 <div class="gv_container">
-    <p class="gv_subtitle">Your site will be published to <a href="#" rel="noopener" id="site" class="gv_link"><span>#</span><svg width="11"
-                height="11">
+    <p class="gv_subtitle">Your site will be published to <a href="#" rel="noopener" id="site"
+            class="gv_link"><span>#</span><svg width="11" height="11">
                 <path fill="currentColor"
                     d="M5 1v1h3.293L4.646 5.646l.707.707L9 2.707V6h1V1H5zm2 8H2V4h2V3H2c-.55 0-1 .45-1 1v5c0 .55.45 1 1 1h5c.55 0 1-.45 1-1V7H7v2z">
                 </path>
@@ -27,30 +27,30 @@
         <path d="M6 12l.01-3V7L6 4l4 4-4 4z" fill="currentColor"></path>
     </svg>Advanced options</div>
 <form id="form" class="gv_form gv_container show-state" autocomplete="off">
-    <p class="gv_subtitle">Your code will be pushed to <a href="#" rel="noopener" id="repo" class="gv_link"><span>#</span><svg
-                width="11" height="11">
+    <p class="gv_subtitle">Your code will be pushed to <a href="#" rel="noopener" id="repo"
+            class="gv_link"><span>#</span><svg width="11" height="11">
                 <path fill="currentColor"
                     d="M5 1v1h3.293L4.646 5.646l.707.707L9 2.707V6h1V1H5zm2 8H2V4h2V3H2c-.55 0-1 .45-1 1v5c0 .55.45 1 1 1h5c.55 0 1-.45 1-1V7H7v2z">
                 </path>
             </svg></a>
-        </p>
-    <label class="gv_label">Site domain and code:</label>
+    </p>
+    <!--<label class="gv_label">Site domain and code:</label>-->
     <div class="gv_text-row">
-        <input type="text" class="gv_text" id="domain" placeholder="i.e greenvision.media" autocomplete="nope"></input>
-        <input type="text" id="site-code" class="gv_text" placeholder="i.e gv" autocomplete="nope"></input>
+        <input type="text" class="gv_text" id="domain" placeholder="Release domain" autocomplete="nope"></input>
+        <input type="text" id="site-code" class="gv_text" placeholder="Site code" autocomplete="nope"></input>
     </div>
-    <label class="gv_label">Publish to staging or final domain?</label>
+    <!--<label class="gv_label">Publish to staging or final domain?</label>-->
     <div class="gv_button-row">
         <input type="button" id="staging" class="gv_button pressed-state on" value="Staging"
             autocomplete="nope"></input>
         <input type="button" id="release" class="gv_button pressed-state" value="Release" autocomplete="nope"></input>
     </div>
-    <label class="gv_label">FTPS Password</label>
+    <!--<label class="gv_label">FTPS Password</label>-->
     <div class="gv_text-row">
-        <input type="password" id="password" class="gv_text" autocomplete="nope"></input>
+        <input type="password" id="password" class="gv_text" placeholder="FTPS password" autocomplete="nope"></input>
     </div>
     <div>
         <button type="button" id="save" class="gv_button show-state on">Save</button>
-        <button type="button" id="restart" class="gv_button show-state">Restart</button>
+        <button type="button" id="restart" class="gv_button show-state">Configured</button>
     </div>
 </form>

@@ -7,7 +7,7 @@ let configData = chrome.storage.sync.get([
   'SITECODE',
   'PASSWORD', //Potentially unwise to store this here...
   'STAGING'
-])
+]);
 
 //Wait for DOM elements
 function waitFor(waitClass, callback) {
@@ -21,7 +21,7 @@ function waitFor(waitClass, callback) {
 }
 
 ////PUSHERMAN CONFIG MODAL
-//Form to configure all the data currently in the github workflow .yaml file
+//Form to configure all the data currently in the my github workflow deploy.yaml file
 
 waitFor('.bem-TopBar_Body_ExportButton', injectModal);
 
@@ -46,8 +46,8 @@ function injectModal(exportButton) {
       'domain': document.getElementById('domain'),
       'siteCode': document.getElementById('site-code'),
       'release': document.getElementById('release'),
-      'staging': document.getElementById('staging'),
-      'password': document.getElementById('password')
+      'password': document.getElementById('password'),
+      'staging': document.getElementById('staging')
     };
 
   setDefaults(inputs, configData);
@@ -93,11 +93,17 @@ function injectModal(exportButton) {
     save.classList.toggle('on');
     restart.classList.toggle('on');
 
-    configData = handleConfig(domain, inputs);
+    configData = handleConfig(inputs, configData);
     setSiteURL(site, configData);
     setRepoURL(repo, configData);
   });
 
+  restart.onmouseover = () => {
+    restart.innerHTML = 'Restart';
+  }
+  restart.onmouseout = () => {
+    restart.innerHTML = 'Configured';
+  }
   restart.addEventListener('click', (e) => {
     e.preventDefault;
     Object.values(inputs).forEach((e) => { e.disabled = false });
@@ -109,13 +115,13 @@ function injectModal(exportButton) {
     inputs.domain.value = configData.DOMAIN;
     inputs.siteCode.value = configData.SITECODE;
     inputs.password.value = configData.PASSWORD;
-    if (configData.staging) {
-      inputs.staging.classList.toggle('on')
-      inputs.release.classList.toggle('on');
+    if (configData.STAGING) {
+      inputs.staging.classList.add('on')
+      inputs.release.classList.remove('on');
     }
     else {
-      inputs.staging.classList.toggle('on');
-      inputs.release.classList.toggle('on');
+      inputs.staging.classList.remove('on');
+      inputs.release.classList.add('on');
     }
   }
 
@@ -141,13 +147,13 @@ function injectModal(exportButton) {
   }
 
   function setSiteURL(site, configData) {
-    if (!configData.STAGING) {
-      site.setAttribute('href', `https://${configData.DOMAIN}`);
-      site.querySelector('span').innerHTML = configData.DOMAIN;
-    }
-    else {
+    if (configData.STAGING) {
       site.setAttribute('href', `https://${configData.SITECODE}.greenvisionmedia.net`);
       site.querySelector('span').innerHTML = configData.SITECODE + '.greenvisionmedia.net';
+    }
+    else {
+      site.setAttribute('href', `https://${configData.DOMAIN}`);
+      site.querySelector('span').innerHTML = configData.DOMAIN;
     }
   }
 
