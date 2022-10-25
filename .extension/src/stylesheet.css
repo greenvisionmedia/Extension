@@ -186,6 +186,21 @@
   align-self: flex-start;
 }
 
+.gv_label_2 {
+  width: 0;
+  font-size: 0.85em;
+  margin-top: -1.5em;
+  white-space: nowrap;
+}
+
+.gv_label_3 {
+  width: 0;
+  font-size: 0.85em;
+  margin-bottom: -0.9em;
+  white-space: nowrap;
+  width: 100%;
+}
+
 .gv_text,
 .gv_button {
   padding: 7px 12px 7px 12px;
@@ -307,3 +322,4 @@
   background: var(--gray-500) !important;
   border-color: #3b3b3b !important
 }
+

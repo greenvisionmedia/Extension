@@ -36,15 +36,19 @@
     </p>
     <!--<label class="gv_label">Site domain and code:</label>-->
     <div class="gv_text-row">
+        <label for="domain" class="gv_label_2">Release Domain</label>
         <input type="text" class="gv_text" id="domain" placeholder="Release domain" autocomplete="nope"></input>
+        <label for="site-code" class="gv_label_2">Site Code</label>
         <input type="text" id="site-code" class="gv_text" placeholder="Site code" autocomplete="nope"></input>
     </div>
     <!--<label class="gv_label">Publish to staging or final domain?</label>-->
+    <label for="staging" class="gv_label_3">Publish Destination</label>
     <div class="gv_button-row">
         <input type="button" id="staging" class="gv_button pressed-state on" value="Staging"
             autocomplete="nope"></input>
         <input type="button" id="release" class="gv_button pressed-state" value="Release" autocomplete="nope"></input>
     </div>
+    <label for="password" class="gv_label_3">FTPS Password</label>
     <!--<label class="gv_label">FTPS Password</label>-->
     <div class="gv_text-row">
         <input type="password" id="password" class="gv_text" placeholder="FTPS password" autocomplete="nope"></input>
