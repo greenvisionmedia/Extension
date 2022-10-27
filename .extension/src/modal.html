@@ -10,6 +10,20 @@
     </div>
 </div>
 <div class="gv_container">
+    <h4 class="gv_subtitle login_subtitle">Publish Service Login</h4>
+    <label for="publish_username" class="gv_label_3">Publishing Service Username</label>
+    <div class="gv_text-row">
+        <input type="text" id="publish_username" class="gv_text" placeholder="Username" autocomplete="nope"></input>
+    </div>
+    <label for="publish_password" class="gv_label_3">Publishing Service Password</label>
+    <div class="gv_text-row">
+        <input type="password" id="publish_password" class="gv_text" placeholder="Password" autocomplete="nope"></input>
+    </div>
+    <div>
+        <button type="button" id="login" class="gv_button">Login</button>
+    </div>
+</div>
+<div class="gv_container">
     <p class="gv_subtitle">Your site will be published to <a href="#" rel="noopener" id="site"
             class="gv_link"><span>#</span><svg width="11" height="11">
                 <path fill="currentColor"
@@ -34,14 +48,12 @@
                 </path>
             </svg></a>
     </p>
-    <!--<label class="gv_label">Site domain and code:</label>-->
     <div class="gv_text-row">
         <label for="domain" class="gv_label_2">Release Domain</label>
         <input type="text" class="gv_text" id="domain" placeholder="Release domain" autocomplete="nope"></input>
-        <label for="site-code" class="gv_label_2">Site Code</label>
+        <label for="site-code" class="gv_label_site_code">Site Code</label>
         <input type="text" id="site-code" class="gv_text" placeholder="Site code" autocomplete="nope"></input>
     </div>
-    <!--<label class="gv_label">Publish to staging or final domain?</label>-->
     <label for="staging" class="gv_label_3">Publish Destination</label>
     <div class="gv_button-row">
         <input type="button" id="staging" class="gv_button pressed-state on" value="Staging"
@@ -49,7 +61,6 @@
         <input type="button" id="release" class="gv_button pressed-state" value="Release" autocomplete="nope"></input>
     </div>
     <label for="password" class="gv_label_3">FTPS Password</label>
-    <!--<label class="gv_label">FTPS Password</label>-->
     <div class="gv_text-row">
         <input type="password" id="password" class="gv_text" placeholder="FTPS password" autocomplete="nope"></input>
     </div>
