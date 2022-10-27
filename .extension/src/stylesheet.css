@@ -151,6 +151,10 @@
   min-height: 4ch;
 }
 
+.login_subtitle {
+  margin: 1em 0 -1em 0;
+}
+
 .gv_settings {
   margin-top: 1rem;
   position: relative;
