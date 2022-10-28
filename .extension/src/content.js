@@ -175,7 +175,7 @@ function injectModal(exportButton) {
   //Shows file icon, alerts user that their file was downloaded
   document.addEventListener('pm-downloaded', () => {
     icons.loading.classList.toggle('on');
-    icons.file.classList.toggle('on');
+    icons.file.classList.add('on');
     dropText.innerHTML = 'Drag your .zip file here:';
   });
 

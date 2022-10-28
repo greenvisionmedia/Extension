@@ -25,9 +25,9 @@
 <div id="page-2" class="gv_page show-state">
     <p class="gv_subtitle">Your site will be published to <a href="#" rel="noopener" id="site" class="gv_link"><span>#</span><svg width="11" height="11"><path fill="currentColor"d="M5 1v1h3.293L4.646 5.646l.707.707L9 2.707V6h1V1H5zm2 8H2V4h2V3H2c-.55 0-1 .45-1 1v5c0 .55.45 1 1 1h5c.55 0 1-.45 1-1V7H7v2z"></path></svg></a></p>
     <div class="gv_container">
-        <div>
+        <div class="gv_button-row">
             <button type="button" id="cancel" class="gv_button">Cancel</button>
-            <button type="button" id="publish" class="gv_button">Publish</button>
+            <button type="button" id="publish" class="gv_button">Publish to green servers!</button>
         </div>
     </div>
     <div id="settings" class="gv_settings">
@@ -37,9 +37,9 @@
     <form id="form" class="gv_form gv_container open-state" autocomplete="off">
         <div class="gv_text-row">
             <label for="domain" class="gv_label is-domain">Release Domain</label>
-            <input type="text" class="gv_text" id="domain" placeholder="Release domain" autocomplete="nope"></input>
+            <input type="text" class="gv_text" id="domain" placeholder="i.e. greenvision.media" autocomplete="nope"></input>
             <label for="site-code" class="gv_label is-site-code">Site Code</label>
-            <input type="text" id="site-code" class="gv_text" placeholder="Site code" autocomplete="nope"></input>
+            <input type="text" id="site-code" class="gv_text" placeholder="i.e. gv" autocomplete="nope"></input>
         </div>
         <label for="staging" class="gv_label">Publish Destination</label>
         <div class="gv_button-row">
