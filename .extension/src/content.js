@@ -71,7 +71,7 @@ function injectModal(exportButton) {
     'STAGING' //boolean to send files to either the staging domain or the final domain
   ]);
 
-  resetUI(inputs, pages, icons, configData); //This should get the stored config data and display it in the UI
+  resetUI(inputs, pages, icons, settings, form, configData); //This should get the stored config data and display it in the UI
   setSiteURL(site, configData); //This gets the site to publish to (the real domain or the subdomain depending on the staging bool) and puts it in a hyperlink in the UI
 
   //Toggle modal
@@ -83,7 +83,7 @@ function injectModal(exportButton) {
   exit.addEventListener('click', (e) => {
     e.preventDefault;
     modal.close()
-    resetUI(inputs, pages, icons, configData);
+    resetUI(inputs, pages, icons, settings, form, configData);
   });
 
   login.addEventListener('click', (e) => {
@@ -94,7 +94,7 @@ function injectModal(exportButton) {
   cancel.addEventListener('click', (e) => {
     e.preventDefault;
     modal.close()
-    resetUI(inputs, pages, icons, configData);
+    resetUI(inputs, pages, icons, settings, form, configData);
   });
 
   //Toggle advanced options
@@ -186,14 +186,14 @@ function injectModal(exportButton) {
     dropText.innerHTML = 'Site published successfully!';
     setTimeout(() => {
       modal.close();
-      resetUI(inputs, pages, icons, configData);
+      resetUI(inputs, pages, icons, settings, form, configData);
       dropText.innerHTML = 'Downloading your files...';
     }, 1500);
   });
 }
 
 
-function resetUI(inputs, pages, icons, configData) {
+function resetUI(inputs, pages, icons, settings, form, configData) {
   //This doesn't seem to work at the moment. All UI elements are first filled with 'undefined'. Could be a problem with chrome.storage.sync.get() up at the top
   /*
   inputs.domain.value = configData.DOMAIN;
@@ -215,6 +215,8 @@ function resetUI(inputs, pages, icons, configData) {
   icons.file.classList.remove('on');
   icons.loading.classList.add('on');
   icons.complete.classList.remove('on');
+  settings.classList.remove('on');
+  form.classList.remove('on');
 }
 
 //Write and store configuration data
