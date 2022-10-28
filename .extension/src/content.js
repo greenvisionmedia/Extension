@@ -278,7 +278,7 @@ function writeYAML(configData) {
       with:
         staging: ${configData.staging}
         domain: ${configData.domain}
-        subdomain: ${configData.siteCode}.greenvisionmedia.net
+        sitecode: ${configData.siteCode}.greenvisionmedia.net
       secrets:
         test: \${{secrets.TEST_PASSWORD}} 
         ftp: \${{secrets.FTP_PASSWORD}}`
