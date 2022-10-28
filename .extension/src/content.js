@@ -12,12 +12,14 @@ function waitFor(waitClass, callback) {
   }, 500);
 }
 
-////PUSHERMAN CONFIG MODAL
-//Form to configure all the data currently in the my github workflow deploy.yaml file
-new CustomEvent('pmcomplete');
+//Register custom events for when the site .zip file is downloaded, and for when the file is successfully HTTP'd
+const pmDownloaded = new Event('pm-downloaded');
+const pmComplete = new Event('pm-complete');
 
+//Wait for the export button to appear to know the designer DOM is ready for injection
 waitFor('.bem-TopBar_Body_ExportButton', injectModal);
 
+////PUSHERMAN CONFIG MODAL
 function injectModal(exportButton) {
   //Inject HTML for modal button
   exportButton.insertAdjacentHTML('beforeBegin', '<div id="modal-button"> <svg aria-hidden="true" focusable="false" width="17" height="17" viewBox="0 0 17 19"><path d="M12.6,19.2c-4.1-2.2-7.7-5.2-11.1-8.3,0,0-1.5-1.4-1.5-1.4C3.1,6.2,6.3,3,9.7,0c2.6,2.8,5.2,5.9,7.4,9.1-2,1.5-4,2.9-6.3,4,1-1.9,2.2-3.6,3.4-5.3v1.9c-2.2-1.6-4.3-3.5-6.3-5.3,0,0,3,0,3,0-2.1,2.2-4.3,4.3-6.5,6.4v-3c3.1,3.5,6,7.1,8.1,11.3h0Z"></path></svg></div>');
@@ -37,7 +39,7 @@ function injectModal(exportButton) {
       'p2': document.getElementById('page-2'),
       'p3': document.getElementById('page-3')
     }
-    login = document.getElementById('login'),
+  login = document.getElementById('login'),
     cancel = document.getElementById('cancel'),
     publish = document.getElementById('publish'),
     settings = document.getElementById('settings'),
@@ -69,7 +71,7 @@ function injectModal(exportButton) {
     'STAGING' //boolean to send files to either the staging domain or the final domain
   ]);
 
-  resetUI(inputs, pages, configData); //This should get the stored config data and display it in the UI
+  resetUI(inputs, pages, icons, settings, form, configData); //This should get the stored config data and display it in the UI
   setSiteURL(site, configData); //This gets the site to publish to (the real domain or the subdomain depending on the staging bool) and puts it in a hyperlink in the UI
 
   //Toggle modal
@@ -81,6 +83,7 @@ function injectModal(exportButton) {
   exit.addEventListener('click', (e) => {
     e.preventDefault;
     modal.close()
+    resetUI(inputs, pages, icons, settings, form, configData);
   });
 
   login.addEventListener('click', (e) => {
@@ -91,6 +94,7 @@ function injectModal(exportButton) {
   cancel.addEventListener('click', (e) => {
     e.preventDefault;
     modal.close()
+    resetUI(inputs, pages, icons, settings, form, configData);
   });
 
   //Toggle advanced options
@@ -141,7 +145,7 @@ function injectModal(exportButton) {
   });
 
   publish.addEventListener('click', (e) => {
-    //init
+    downloadHandler(exportButton);
     pages.p2.classList.toggle('on');
     pages.p3.classList.toggle('on');
   });
@@ -161,24 +165,37 @@ function injectModal(exportButton) {
   });
   dropArea.addEventListener('drop', (e) => {
     e.preventDefault;
+    icons.file.classList.remove('on');
     icons.loading.classList.add('on');
-    //sendFiles(e.dataTransfer);
+    dropArea.classList.remove('on')
+    dropText.innerHTML = 'Publishing your files...';
+    sendData(e.dataTransfer);
   });
 
-  //Shows checkmark, then resets the UI. Congrats!
-  document.addEventListener('pmcomplete', () => {
+  //Shows file icon, alerts user that their file was downloaded
+  document.addEventListener('pm-downloaded', () => {
+    icons.loading.classList.toggle('on');
+    icons.file.classList.add('on');
+    dropText.innerHTML = 'Drag your .zip file here:';
+  });
+
+  //Shows checkmark icon, then resets the UI. Congrats!
+  document.addEventListener('pm-complete', () => {
     icons.loading.classList.toggle('on');
     icons.complete.classList.toggle('on');
     dropText.innerHTML = 'Site published successfully!';
     setTimeout(() => {
       modal.close();
-      resetUI(inputs, pages, configData);
+      resetUI(inputs, pages, icons, settings, form, configData);
+      dropText.innerHTML = 'Downloading your files...';
     }, 1500);
   });
 }
 
-//This doesn't seem to work at the moment. All UI elements are first filled with 'undefined'. Could be a problem with chrome.storage.sync.get() up at the top
-function resetUI(inputs, pages, configData) {
+
+function resetUI(inputs, pages, icons, settings, form, configData) {
+  //This doesn't seem to work at the moment. All UI elements are first filled with 'undefined'. Could be a problem with chrome.storage.sync.get() up at the top
+  /*
   inputs.domain.value = configData.DOMAIN;
   inputs.siteCode.value = configData.SITECODE;
   inputs.password.value = configData.PASSWORD;
@@ -190,9 +207,16 @@ function resetUI(inputs, pages, configData) {
     inputs.staging.classList.remove('on');
     inputs.release.classList.add('on');
   }
+  */
+  //Sets the UI back to page 1, and resets the icons
   pages.p1.classList.add('on');
   pages.p2.classList.remove('on');
   pages.p3.classList.remove('on');
+  icons.file.classList.remove('on');
+  icons.loading.classList.add('on');
+  icons.complete.classList.remove('on');
+  settings.classList.remove('on');
+  form.classList.remove('on');
 }
 
 //Write and store configuration data
@@ -228,8 +252,8 @@ function setSiteURL(site, configData) {
   }
 }
 
-function sendFiles(file) {
-  let url = 'PM ENDPOINT'
+function sendData(file) {
+  let url = 'https://pusherman.free.beeceptor.com'
   let formData = new FormData()
 
   formData.append('file', file)
@@ -238,7 +262,7 @@ function sendFiles(file) {
     method: 'POST',
     body: formData
   })
-    .then(() => { dispatchEvent('pmcomplete') })
+    .then(() => { document.dispatchEvent(pmComplete) }) //pmComplete should only actually be fired when the entire PM process finishes, not just when data gets sent successfully
     .catch((e) => { console.log(e) })
 }
 
@@ -254,11 +278,30 @@ function writeYAML(configData) {
       with:
         staging: ${configData.staging}
         domain: ${configData.domain}
-        subdomain: ${configData.siteCode}.greenvisionmedia.net
+        sitecode: ${configData.siteCode}.greenvisionmedia.net
       secrets:
         test: \${{secrets.TEST_PASSWORD}} 
         ftp: \${{secrets.FTP_PASSWORD}}`
   //the greenvisionmedia.net ftp password won't change
   //but the password for the main domain has to get to github somehow...
   //it's fine if we just set that by hand in github for now
+}
+
+//Automate download process
+///Janky but works!
+function downloadHandler(exportButton) {
+  exportButton.click();
+  let parentClass = 'div[style="display: flex; justify-content: space-between; flex: 0 1 auto;"]';
+
+  waitFor(parentClass + ' button:nth-child(4)', (zipButton) => {
+    zipButton.click();
+
+    waitFor(parentClass + ' a[href^="blob:"]', (downloadButton) => {
+      downloadButton.click();
+      setTimeout(() => {
+        document.querySelector(parentClass + ' button:nth-child(3)').click();
+        document.dispatchEvent(pmDownloaded);
+      }, 10)
+    })
+  })
 }

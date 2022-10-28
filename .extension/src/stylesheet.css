@@ -81,7 +81,7 @@
   border-radius: 3px;
   border: 1px solid var(--gray-800);
   box-shadow: rgba(0, 0, 0, 0.3);
-  width: 20rem;
+  width: 16rem;
   color: var(--gray-100);
   font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
   font-size: 12px;
@@ -102,7 +102,7 @@
   position: relative;
   top: 0.1em;
   left: 0.3em;
-  margin-right: 0.75ch;
+  margin-right: 0.3em;
 }
 
 .gv_menu {
@@ -167,7 +167,7 @@
 }
 
 .gv_container {
-  margin-top: 2rem;
+  margin-top: 1rem;
   display: flex;
   flex-direction: column;
   align-items: flex-end !important;
@@ -202,7 +202,7 @@
   align-self: flex-start;
   width: 100%;
   font-size: 0.85em;
-  margin-bottom: -0.9em;
+  margin-bottom: -0.6em;
   white-space: nowrap;
 }
 
@@ -231,7 +231,6 @@
 }
 
 .gv_drop-area {
-  margin-top: -1rem;
   min-height: 10rem;
   align-self: stretch;
   justify-self: stretch;
@@ -265,7 +264,7 @@
   background: var(--gray-400);
   justify-content: center;
   color: white;
-  width: 10ch;
+  width: 6rem;
 }
 
 .gv_button:hover {
@@ -286,7 +285,7 @@
 }
 
 #site-code {
-  width: 15ch;
+  width: 6rem;
   margin-left: 8px;
 }
 
@@ -310,7 +309,9 @@
 }
 
 #publish {
-  background-color: var(--green-400)
+  background-color: var(--green-400);
+  width: 100%;
+  margin-left: 0.5rem;
 }
 
 #publish:hover {
@@ -322,7 +323,6 @@
 }
 
 #save, #restart {
-  width: 6rem;
   background-color: var(--blue-400);
 }
 
@@ -335,6 +335,7 @@
 }
 
 #form {
+  margin-top: 2rem;
   appearance: none;
 }
 
