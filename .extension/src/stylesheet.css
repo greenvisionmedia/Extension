@@ -231,7 +231,7 @@
 }
 
 .gv_drop-area {
-  min-height: 8rem;
+  min-height: 10rem;
   align-self: stretch;
   justify-self: stretch;
   display: flex;
