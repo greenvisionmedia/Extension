@@ -55,7 +55,7 @@ function injectModal(exportButton) {
     dropArea = document.getElementById('drop-area'),
     dropText = document.getElementById('drop-text'),
     icons = {
-      "file": document.getElementById('file-icon'),
+      "file": document.getElementById('file'),
       "loading": document.getElementById('loading'),
       "complete": document.getElementById('complete')
     }
