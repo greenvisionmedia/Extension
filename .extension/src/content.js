@@ -14,15 +14,17 @@ function waitFor(waitClass, callback) {
 
 ////PUSHERMAN CONFIG MODAL
 //Form to configure all the data currently in the my github workflow deploy.yaml file
+new CustomEvent('pmcomplete');
 
 waitFor('.bem-TopBar_Body_ExportButton', injectModal);
 
 function injectModal(exportButton) {
   //Inject HTML for modal button
   exportButton.insertAdjacentHTML('beforeBegin', '<div id="modal-button"> <svg aria-hidden="true" focusable="false" width="17" height="17" viewBox="0 0 17 19"><path d="M12.6,19.2c-4.1-2.2-7.7-5.2-11.1-8.3,0,0-1.5-1.4-1.5-1.4C3.1,6.2,6.3,3,9.7,0c2.6,2.8,5.2,5.9,7.4,9.1-2,1.5-4,2.9-6.3,4,1-1.9,2.2-3.6,3.4-5.3v1.9c-2.2-1.6-4.3-3.5-6.3-5.3,0,0,3,0,3,0-2.1,2.2-4.3,4.3-6.5,6.4v-3c3.1,3.5,6,7.1,8.1,11.3h0Z"></path></svg></div>');
+
   //Inject the HTML for the modal
   let modal = document.createElement('dialog');
-  modal.id = 'gv_pm';
+  modal.id = 'gv_pusherman';
   modal.innerHTML = '{{modal.html}}'; //This string gets replaced during gulp build
   document.body.appendChild(modal);
 
@@ -30,19 +32,33 @@ function injectModal(exportButton) {
   let
     modalButton = document.getElementById('modal-button'),
     exit = document.getElementById('exit'),
+    pages = {
+      'p1': document.getElementById('page-1'),
+      'p2': document.getElementById('page-2'),
+      'p3': document.getElementById('page-3')
+    }
+    login = document.getElementById('login'),
     cancel = document.getElementById('cancel'),
     publish = document.getElementById('publish'),
     settings = document.getElementById('settings'),
     form = document.getElementById('form'),
     save = document.getElementById('save'),
     restart = document.getElementById('restart'),
+    site = document.getElementById('site'),
     inputs = {
       'domain': document.getElementById('domain'),
       'siteCode': document.getElementById('site-code'),
       'release': document.getElementById('release'),
       'password': document.getElementById('password'),
       'staging': document.getElementById('staging')
-    };
+    },
+    dropArea = document.getElementById('drop-area'),
+    dropText = document.getElementById('drop-text'),
+    icons = {
+      "file": document.getElementById('file-icon'),
+      "loading": document.getElementById('loading'),
+      "complete": document.getElementById('complete')
+    }
 
 
   let configData = chrome.storage.sync.get([
@@ -53,9 +69,8 @@ function injectModal(exportButton) {
     'STAGING' //boolean to send files to either the staging domain or the final domain
   ]);
 
-  setDefaults(inputs, configData); //This should get the stored config data and display it in the UI
+  resetUI(inputs, pages, configData); //This should get the stored config data and display it in the UI
   setSiteURL(site, configData); //This gets the site to publish to (the real domain or the subdomain depending on the staging bool) and puts it in a hyperlink in the UI
-  setRepoURL(repo, configData); ///Similar thing - displays a hyperlink using the project name (webflow.com/designer/[project name])
 
   //Toggle modal
   modalButton.addEventListener('click', (e) => {
@@ -66,6 +81,11 @@ function injectModal(exportButton) {
   exit.addEventListener('click', (e) => {
     e.preventDefault;
     modal.close()
+  });
+
+  login.addEventListener('click', (e) => {
+    pages.p1.classList.toggle('on');
+    pages.p2.classList.toggle('on');
   });
 
   cancel.addEventListener('click', (e) => {
@@ -102,26 +122,63 @@ function injectModal(exportButton) {
 
     configData = handleConfig(inputs, configData); //Logs the new config data
     setSiteURL(site, configData); //Again shows the new site hyperlink
-    setRepoURL(repo, configData); //Shows new repo hyperlink
   });
 
   //Hitting restart just allows access to the form again
-  restart.onmouseover = () => {
+  restart.addEventListener('mouseenter', (e) => {
+    e.preventDefault;
     restart.innerHTML = 'Restart';
-  }
-  restart.onmouseout = () => {
+  });
+  restart.addEventListener('mouseleave', (e) => {
+    e.preventDefault;
     restart.innerHTML = 'Configured';
-  }
+  });
   restart.addEventListener('click', (e) => {
     e.preventDefault;
     Object.values(inputs).forEach((e) => { e.disabled = false });
     save.classList.toggle('on');
     restart.classList.toggle('on');
   });
+
+  publish.addEventListener('click', (e) => {
+    //init
+    pages.p2.classList.toggle('on');
+    pages.p3.classList.toggle('on');
+  });
+
+  //Draggging files over the drop area adds a css class; dropping sends an XHR 
+  dropArea.addEventListener('dragenter', (e) => {
+    e.preventDefault;
+    dropArea.classList.add('on');
+  });
+  dropArea.addEventListener('dragover', (e) => {
+    e.preventDefault;
+    dropArea.classList.add('on');
+  });
+  dropArea.addEventListener('dragleave', (e) => {
+    e.preventDefault;
+    dropArea.classList.remove('on');
+  });
+  dropArea.addEventListener('drop', (e) => {
+    e.preventDefault;
+    icons.loading.classList.add('on');
+    //sendFiles(e.dataTransfer);
+  });
+
+  //Shows checkmark, then resets the UI. Congrats!
+  document.addEventListener('pmcomplete', () => {
+    icons.loading.classList.toggle('on');
+    icons.complete.classList.toggle('on');
+    dropText.innerHTML = 'Site published successfully!';
+    setTimeout(() => {
+      modal.close();
+      resetUI(inputs, pages, configData);
+    }, 1500);
+  });
 }
 
 //This doesn't seem to work at the moment. All UI elements are first filled with 'undefined'. Could be a problem with chrome.storage.sync.get() up at the top
-function setDefaults(inputs, configData) {
+function resetUI(inputs, pages, configData) {
   inputs.domain.value = configData.DOMAIN;
   inputs.siteCode.value = configData.SITECODE;
   inputs.password.value = configData.PASSWORD;
@@ -133,16 +190,19 @@ function setDefaults(inputs, configData) {
     inputs.staging.classList.remove('on');
     inputs.release.classList.add('on');
   }
+  pages.p1.classList.add('on');
+  pages.p2.classList.remove('on');
+  pages.p3.classList.remove('on');
 }
 
 //Write and store configuration data
 function handleConfig(inputs, configData) {
-  let isStaging = true;
+  let stagingBool = true;
   if (inputs.staging.classList.contains('on')) {
-    isStaging = true;
+    stagingBool = true;
   }
   else {
-    isStaging = false;
+    stagingBool = false;
   }
   let projectString = window.location.pathname.split('/')[2];
   configData = {
@@ -150,7 +210,7 @@ function handleConfig(inputs, configData) {
     DOMAIN: inputs.domain.value,
     SITECODE: inputs.siteCode.value,
     PASSWORD: inputs.password.value,
-    STAGING: isStaging
+    STAGING: stagingBool
   };
   chrome.storage.sync.set(configData);
   return configData;
@@ -168,9 +228,18 @@ function setSiteURL(site, configData) {
   }
 }
 
-function setRepoURL(repo, configData) {
-  repo.setAttribute('href', `https://github.com/greenvisionmedia/${configData.PROJECT}.git`);
-  repo.querySelector('span').innerHTML = 'github.com/greenvisionmedia/' + configData.PROJECT;
+function sendFiles(file) {
+  let url = 'PM ENDPOINT'
+  let formData = new FormData()
+
+  formData.append('file', file)
+
+  fetch(url, {
+    method: 'POST',
+    body: formData
+  })
+    .then(() => { dispatchEvent('pmcomplete') })
+    .catch((e) => { console.log(e) })
 }
 
 //Might be better to do this serverside? But it's nice to have the yaml somewhere accessible if I want to change it
