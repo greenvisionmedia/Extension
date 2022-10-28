@@ -3,11 +3,11 @@
 //Set configuration defaults
 chrome.runtime.onInstalled.addListener(() => {
   chrome.storage.sync.set({
-  PROJECT:'',
-  DOMAIN:'',
-  SITECODE:'',
-  PASSWORD:'',
-  STAGING: true
+    PROJECT: '',
+    DOMAIN: '',
+    SITECODE: '',
+    PASSWORD: '',
+    STAGING: true
   });
 })
 
