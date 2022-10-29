@@ -266,12 +266,12 @@ function handleConfig(UI, configData) {
     stagingBool = false;
   }
   let projectString = window.location.pathname.split('/')[2];
-  let scriptArray = UI.inputs.scripts.value.split(', ');
+  let scriptArray = UI.inputs.scripts.value.split(',');
   configData = {
     PROJECT: projectString,
     DOMAIN: UI.inputs.domain.value,
     SITECODE: UI.inputs.siteCode.value,
-    SITECODE: scriptArray,
+    SCRIPTS: scriptArray,
     STAGING: stagingBool
   };
   chrome.storage.sync.set(configData);
@@ -287,7 +287,7 @@ function addScripts() {
   g('scripts').insertAdjacentElement('afterend',scriptRow);
 
   // Fills the new div with spans, themselves filled with the space-delimited script names
-  let scriptArray = g('scripts').value.split(', ');
+  let scriptArray = g('scripts').value.split(',');
   for (script of scriptArray) {
     let scriptSpan = document.createElement('span');
     scriptSpan.innerHTML = script;

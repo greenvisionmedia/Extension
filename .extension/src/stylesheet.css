@@ -81,11 +81,10 @@
   border-radius: 3px;
   border: 1px solid var(--gray-800);
   box-shadow: rgba(0, 0, 0, 0.3);
-  width: 16rem;
   color: var(--gray-100);
   font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
   font-size: 12px;
-  width: 24rem;
+  width: 28rem;
   padding: 3rem 1rem 1rem 1rem;
   will-change: transform;
 }
@@ -233,7 +232,7 @@
 
 .gv_drop-area {
   position: relative;
-  min-height: 10rem;
+  min-height: 15rem;
   align-self: stretch;
   justify-self: stretch;
   display: flex;
@@ -401,7 +400,7 @@
 
 /* ANIMATION */
 dialog[open] {
-  animation: 275ms cubic-bezier(0.25, 1, 0.5, 1) 0s 1 normal both running open;
+  animation: 275ms cubic-bezier(0.22, 1, 0.36, 1) 0s 1 normal both running open;
 }
 @keyframes open{
   from {
@@ -415,7 +414,7 @@ dialog[open] {
 }
 
 dialog.close {
-  animation: 100ms cubic-bezier(0.25, 1, 0.5, 1) 0s 1 normal both running close;
+  animation: 100ms cubic-bezier(0.22, 1, 0.36, 1) 0s 1 normal both running close;
 }
 @keyframes close{
   to {
@@ -434,10 +433,10 @@ dialog::backdrop {
   animation: none;
 }
 dialog[open]::backdrop {
-  animation: 200ms cubic-bezier(0.25, 1, 0.5, 1) 0s 1 normal both running show-backdrop;
+  animation: 200ms cubic-bezier(0.22, 1, 0.36, 1) 0s 1 normal both running show-backdrop;
 }
 dialog.close::backdrop {
-  animation: 100ms cubic-bezier(0.25, 1, 0.5, 1) 0s 1 normal both running hide-backdrop;
+  animation: 100ms cubic-bezier(0.22, 1, 0.36, 1) 0s 1 normal both running hide-backdrop;
 }
 @keyframes show-backdrop {
   from {
