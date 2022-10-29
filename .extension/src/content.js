@@ -60,7 +60,6 @@ function injectModal(exportButton) {
     'PROJECT', //the slug after webflow.com/designer, useful when we make github repos
     'DOMAIN', //the domain the final site will be published to
     'SITECODE', //all my clients get a 2-3 letter code, and a subdomain at [site code].greenvisionmedia.net
-    'PASSWORD', //Potentially unwise to store this here...
     'STAGING' //boolean to send files to either the staging domain or the final domain
   ]);
 
@@ -132,7 +131,7 @@ function injectModal(exportButton) {
   });
   UI.restart.addEventListener('click', (e) => {
     e.preventDefault;
-    Object.values(inputs).forEach((e) => { e.disabled = false });
+    Object.values(UI.inputs).forEach((e) => { e.disabled = false });
     UI.save.classList.toggle('on');
     UI.restart.classList.toggle('on');
   });
@@ -170,7 +169,7 @@ function injectModal(exportButton) {
     UI.icons.loading.classList.add('on');
     UI.dropArea.classList.remove('on');
     UI.dropText.innerHTML = 'Publishing your files...';
-    let f = e.dataTransfer.items[0].getAsFile();
+    let f = e.dataTransfer.items[0].getAsFile(); //** I need to make absolutely sure that this.....
     sendData(f);
   });
 
@@ -180,7 +179,7 @@ function injectModal(exportButton) {
     UI.icons.file.classList.remove('on');
     UI.icons.loading.classList.add('on');
     UI.dropText.innerHTML = 'Publishing your files...';
-    let f = this.files[0];
+    let f = this.files; //** ....Is the same as this
     sendData(f);
   })
 
@@ -249,7 +248,6 @@ function handleConfig(UI, configData) {
     PROJECT: projectString,
     DOMAIN: UI.inputs.domain.value,
     SITECODE: UI.inputs.siteCode.value,
-    PASSWORD: UI.inputs.password.value,
     STAGING: stagingBool
   };
   chrome.storage.sync.set(configData);
