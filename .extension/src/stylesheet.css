@@ -360,16 +360,16 @@
   border-color: #3b3b3b !important
 }
 
-#upload {
-  display: none;
-}
-
-.gv_upload {
+#upload-label {
   position: absolute;
   width: 100%;
   height: 100%;
   top: 0;
   cursor: pointer;
+}
+
+#upload {
+ display: none;
 }
 
 #drop-text, #link {

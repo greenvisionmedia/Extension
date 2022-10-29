@@ -49,6 +49,7 @@ function injectModal(exportButton) {
     'dropText': g('drop-text'),
     'link': g('link'),
     'upload': g('upload'),
+    'uploadLabel': g('upload-label'),
     'icons': {
       'file': g('file'),
       'loading': g('loading'),
@@ -147,6 +148,7 @@ function injectModal(exportButton) {
   document.addEventListener('pm-downloaded', () => {
     UI.icons.loading.classList.remove('on');
     UI.icons.file.classList.add('on');
+    UI.uploadLabel.classList.add('on');
     UI.dropText.innerHTML = 'Drag your folder here, or click to upload';
   });
 
@@ -167,17 +169,19 @@ function injectModal(exportButton) {
     e.preventDefault;
     UI.icons.file.classList.remove('on');
     UI.icons.loading.classList.add('on');
+    UI.uploadLabel.classList.remove('on');
     UI.dropArea.classList.remove('on');
     UI.dropText.innerHTML = 'Publishing your files...';
-    let f = e.dataTransfer.items[0].getAsFile(); //** I need to make absolutely sure that this.....
+    let f = e.dataTransfer; //** I need to make absolutely sure that this.....
     sendData(f);
   });
 
-  //An input button as an alternative to dragging and dropping
+  //An input button as an alternative to dragging and dropping (nice if you accidentally close the download bar or something)
   UI.upload.addEventListener('change', (e) => {
     e.preventDefault;
     UI.icons.file.classList.remove('on');
     UI.icons.loading.classList.add('on');
+    UI.uploadLabel.classList.remove('on');
     UI.dropText.innerHTML = 'Publishing your files...';
     let f = this.files; //** ....Is the same as this
     sendData(f);
@@ -231,6 +235,7 @@ function resetUI(UI) {
   UI.form.classList.remove('on');
   UI.link.classList.remove('on');
   UI.dropText.classList.add('on');
+  UI.uploadLabel.classList.remove('on');
   UI.dropText.innerHTML = 'Downloading your files...';
 }
 
@@ -257,14 +262,14 @@ function handleConfig(UI, configData) {
 //These are useful since they use the configData object, they can 
 function setSiteURL(UI, configData) {
   if (configData.STAGING) {
+    UI.link.setAttribute('href', `https://${configData.SITECODE}.greenvisionmedia.net`);
     UI.site.setAttribute('href', `https://${configData.SITECODE}.greenvisionmedia.net`);
     UI.site.querySelector('span').innerHTML = configData.SITECODE + '.greenvisionmedia.net';
-    UI.link.innerHTML = configData.SITECODE + '.greenvisionmedia.net';
   }
   else {
+    UI.link.setAttribute('href', `https://${configData.DOMAIN}`);
     UI.site.setAttribute('href', `https://${configData.DOMAIN}`);
     UI.site.querySelector('span').innerHTML = configData.DOMAIN;
-    UI.link.innerHTML = configData.DOMAIN;
   }
 }
 
@@ -317,8 +322,8 @@ function automateDownload(exportButton) {
     zipButton.click();
 
     waitFor(parentClass + ' a[href^="blob:"]', (downloadButton) => {
-      downloadButton.click();
-      setTimeout(() => { //This timeout is probably not best practice, but much easier than the alternatives (the onDownloaded event only registers in background scripts, not content scripts)
+      //downloadButton.click();
+      setTimeout(() => { //This timeout is probably not best practice, but much easier than the alternatives (the onDownloaded event only fires in background scripts, not content scripts)
         document.querySelector(parentClass + ' button:nth-child(3)').click();
         document.dispatchEvent(pmDownloaded);
       }, 10)
