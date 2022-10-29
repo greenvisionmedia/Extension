@@ -2,7 +2,7 @@
 
 /**UTILITY**/
 * {
-  -webkit-font-smoothing: antialiased;
+  font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
@@ -374,4 +374,58 @@
 
 #drop-text, #link {
   height: 1.5rem;
+}
+
+/* ANIMATION */
+dialog[open] {
+  animation: show 200ms ease normal;
+}
+@keyframes show{
+  from {
+      opacity: 0.4;
+      transform: scale(0.9);
+  }
+  to {
+      opacity: 1;
+      transform: scale(1);
+  }
+}
+
+dialog.close {
+  animation: close 200ms ease normal;
+}
+@keyframes show{
+  to {
+      opacity: 0.4;
+      transform: scale(0.9);
+  }
+}
+
+.dialog::backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, .5);
+  animation: none;
+}
+.dialog[open]::backdrop {
+  animation: show-backdrop 0.5s ease 0.2s normal;
+}
+.dialog.close::backdrop {
+  animation: hide-backdrop 0.5s ease 0.2s normal;
+}
+@keyframes show-backdrop {
+  from {
+      opacity: 0;
+  }
+  to {
+      opacity: 1;
+  }
+}
+@keyframes hide-backdrop{
+  to {
+      opacity: 0;
+  }
 }

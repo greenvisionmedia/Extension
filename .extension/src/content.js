@@ -75,8 +75,12 @@ function injectModal(exportButton) {
 
   UI.exit.addEventListener('click', (e) => {
     e.preventDefault;
-    UI.modal.close();
-    resetUI(UI);
+    UI.modal.classList.add('close');
+    setTimeout(() => {
+      UI.modal.classList.remove('close');
+      UI.modal.close();
+      resetUI(UI);
+    },200)
   });
 
   UI.login.addEventListener('click', (e) => {
@@ -85,9 +89,12 @@ function injectModal(exportButton) {
   });
 
   UI.cancel.addEventListener('click', (e) => {
-    e.preventDefault;
-    UI.modal.close();
-    resetUI(UI);
+    UI.modal.classList.add('close');
+    setTimeout(() => {
+      UI.modal.classList.remove('close');
+      UI.modal.close();
+      resetUI(UI);
+    },200)
   });
 
   //Toggle advanced options
