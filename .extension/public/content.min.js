@@ -80,7 +80,7 @@ function injectModal(exportButton) {
       UI.modal.classList.remove('close');
       UI.modal.close();
       resetUI(UI);
-    },200)
+    },69)
   });
 
   UI.login.addEventListener('click', (e) => {
@@ -94,7 +94,7 @@ function injectModal(exportButton) {
       UI.modal.classList.remove('close');
       UI.modal.close();
       resetUI(UI);
-    },200)
+    },69)
   });
 
   //Toggle advanced options
