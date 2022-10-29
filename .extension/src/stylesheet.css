@@ -327,6 +327,7 @@
 }
 
 #save, #restart {
+  margin-top: .75rem;
   background-color: var(--blue-400);
 }
 
@@ -377,6 +378,27 @@
   height: 1.5rem;
 }
 
+#scripts, #script-row {
+  height: 2.5rem;
+}
+
+#script-row {
+  background: #333;
+  border-color: #2b2b2b;
+  padding: 7px;
+  display: flex;
+}
+
+#script-row span {
+  padding: 3px 7px 3px 7px;
+  background: var(--green-400);
+  border-radius: 3px;
+  cursor: disabled;
+  border-color:rgba(0, 0, 0, .5);
+  margin-right: 8px;
+  line-height: 1.6;
+}
+
 /* ANIMATION */
 dialog[open] {
   animation: 275ms cubic-bezier(0.25, 1, 0.5, 1) 0s 1 normal both running open;
@@ -393,7 +415,7 @@ dialog[open] {
 }
 
 dialog.close {
-  animation: 69ms cubic-bezier(0.25, 1, 0.5, 1) 0s 1 normal both running close;
+  animation: 100ms cubic-bezier(0.25, 1, 0.5, 1) 0s 1 normal both running close;
 }
 @keyframes close{
   to {
@@ -415,7 +437,7 @@ dialog[open]::backdrop {
   animation: 200ms cubic-bezier(0.25, 1, 0.5, 1) 0s 1 normal both running show-backdrop;
 }
 dialog.close::backdrop {
-  animation: 69ms cubic-bezier(0.25, 1, 0.5, 1) 0s 1 normal both running hide-backdrop;
+  animation: 100ms cubic-bezier(0.25, 1, 0.5, 1) 0s 1 normal both running hide-backdrop;
 }
 @keyframes show-backdrop {
   from {
