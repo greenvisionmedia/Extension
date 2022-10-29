@@ -243,7 +243,8 @@
   border-radius: 2px;
   border-width: 1px;
   color: var(--gray-350);
-  padding-top: 2rem;
+  padding-top: 1.25rem;
+  cursor: pointer;
 }
 
 .gv_text, .gv_drop-area {
@@ -368,4 +369,5 @@
   position: absolute;
   width: 100%;
   height: 100%;
+  top: 0;
 }

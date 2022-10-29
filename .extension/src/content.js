@@ -148,7 +148,7 @@ function injectModal(exportButton) {
   document.addEventListener('pm-downloaded', () => {
     UI.icons.loading.classList.remove('on');
     UI.icons.file.classList.add('on');
-    UI.dropText.innerHTML = 'Drag your .zip file here:';
+    UI.dropText.innerHTML = 'Drag your folder here, or click to upload';
   });
 
   //Draggging files over the drop area adds a css class; dropping sends an XHR 
@@ -230,7 +230,6 @@ function resetUI(UI) {
   UI.icons.complete.classList.remove('on');
   UI.settings.classList.remove('on');
   UI.form.classList.remove('on');
-  UI.upload.disabled = true;
   UI.link.classList.remove('on');
   UI.dropText.classList.add('on');
   UI.dropText.innerHTML = 'Downloading your files...';
