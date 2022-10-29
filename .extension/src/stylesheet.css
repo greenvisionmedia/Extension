@@ -68,14 +68,14 @@
 }
 
 /**MODAL**/
-#gv_pusherman::backdrop {
+.gv_pusherman::backdrop {
   position: absolute;
   width: 100%;
   height: 100vh;
   background-color: rgba(0, 0, 0, 0.8);
 }
 
-#gv_pusherman {
+.gv_pusherman {
   position: relative;
   background: var(--gray-600);
   border-radius: 3px;
@@ -231,16 +231,19 @@
 }
 
 .gv_drop-area {
+  position: relative;
   min-height: 10rem;
   align-self: stretch;
   justify-self: stretch;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   border-style: solid;
   border-radius: 2px;
   border-width: 1px;
   color: var(--gray-350);
+  padding-top: 2rem;
 }
 
 .gv_text, .gv_drop-area {
@@ -355,4 +358,14 @@
 .pressed-state:disabled {
   background: var(--gray-500) !important;
   border-color: #3b3b3b !important
+}
+
+#upload {
+  display: none;
+}
+
+.gv_upload {
+  position: absolute;
+  width: 100%;
+  height: 100%;
 }
