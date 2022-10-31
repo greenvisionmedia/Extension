@@ -246,10 +246,11 @@
     border-width: 1px;
     color: var(--gray-350);
     padding-top: 1.25rem;
+    width: 100%;
+    background: var(--gray-700);
 }
 
-.gv_text,
-.gv_drop-area {
+.gv_text {
     border-color: var(--gray-900);
     background: var(--gray-800);
     outline: none;

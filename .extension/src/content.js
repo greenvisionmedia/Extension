@@ -4,9 +4,23 @@
 // Query shorthands
 const g = (e) => document.getElementById(e);
 
-// Register custom events for when the site .zip file is downloaded, when new config data is logged, and for when the file is successfully HTTP'd
+// Register custom events for when the site .zip file is downloaded, when a user successfully logs in, and for when the file is successfully HTTP'd
 const pmDownloaded = new Event('pm-downloaded');
+const pmLogin = new Event('pm-login');
 const pmComplete = new Event('pm-complete');
+
+/*
+fetch('https://unpkg.com/bcrypt@5.0.1/bcrypt.js')
+    .then((resp) => resp.text())
+    .then(eval)
+    .catch(console.error);
+
+const salt = '$2b$10$zx/20gZjyBxp/Ib2uuiTou';
+const pass = 'admin';
+bcrypt.hash(pass, salt, function (err, hash) {
+    console.log(`${pass} -> ${hash}`);
+});
+*/
 
 // Wait for the export button to appear to know the designer DOM is ready for injection
 waitFor('.bem-TopBar_Body_ExportButton', injectModal);
@@ -84,10 +98,13 @@ function injectModal(exportButton) {
     });
 
     UI.login.addEventListener('click', (e) => {
+        e.preventDefault;
+        sendLogin(UI);
+    });
+
+    document.addEventListener('pm-login', (e) => {
         UI.page1.classList.remove('on');
         UI.page2.classList.add('on');
-
-        sendLogin(UI);
     });
 
     // This is identical to the exit listener
@@ -299,12 +316,14 @@ function configureUI(UI) {
                     );
                     UI.site.querySelector('span').innerHTML = configData.DOMAIN;
                 }
+                // Pretty much useless, but makes it more obvious which scripts are going to be added and looks cool
                 // Adds a new div that mimics the script input element
                 let scriptRow = document.createElement('div');
                 scriptRow.id = 'script-row';
                 scriptRow.classList.add('gv_text');
                 UI.inputs.scripts.insertAdjacentElement('afterend', scriptRow);
                 for (script of configData.SCRIPTS) {
+                    //Wraps each script in a span for a nice green box
                     let scriptSpan = document.createElement('span');
                     scriptSpan.innerHTML = script;
                     scriptRow.appendChild(scriptSpan);
@@ -319,9 +338,6 @@ function configureUI(UI) {
         }
     );
 }
-
-// Pretty much useless, but makes it more obvious which scripts are going to be added and looks cool
-function sexyScripts(UI) {}
 
 // Write and store configuration data
 function setConfigData(UI) {
@@ -361,7 +377,8 @@ function sendLogin(UI) {
         })
             .then(() => {
                 chrome.storage.local.set({ LOGINSTATE: true });
-            }) // LOGINSTATE should be updated when login succeeds, not just when data gets sent successfully
+                document.dispatchEvent(pmLogin);
+            }) // pmLogin should be updated when login succeeds, not just when data gets sent successfully
             .catch((e) => {
                 console.log(e);
             });
