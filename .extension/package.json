@@ -23,5 +23,8 @@
     "gulp-replace": "^1.1.2",
     "gulp-terser": "^1.4.1",
     "vinyl-paths": "^3.0.1"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.0"
   }
 }

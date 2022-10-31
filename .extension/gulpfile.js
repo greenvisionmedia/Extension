@@ -16,7 +16,7 @@ function markup() {
         .src('./src/*.html')
         .pipe(htmlmin({ collapseWhitespace: true, removeComments: true }))
         .pipe(rename({ suffix: '.min' }))
-        .pipe(gulp.dest('./public'))
+        .pipe(gulp.dest('./public'));
 }
 
 function styles() {
@@ -24,24 +24,29 @@ function styles() {
         .src('./src/*.css')
         .pipe(cssnano())
         .pipe(rename({ suffix: '.min' }))
-        .pipe(gulp.dest('./public'))
+        .pipe(gulp.dest('./public'));
 }
 
 function scripts() {
-    return gulp
-        .src('./src/*.js')
-        //.pipe(terser())
-        .pipe(replace('{{modal.html}}', function (s) {
-            return `${fs.readFileSync('./public/modal.min.html', 'utf8')}`;
-        }))
-        .pipe(rename({ suffix: '.min' }))
-        .pipe(gulp.dest('./public'))
+    return (
+        gulp
+            .src('./src/*.js')
+            //.pipe(terser())
+            .pipe(
+                replace('{{modal.html}}', function (s) {
+                    return `${fs.readFileSync(
+                        './public/modal.min.html',
+                        'utf8'
+                    )}`;
+                })
+            )
+            .pipe(rename({ suffix: '.min' }))
+            .pipe(gulp.dest('./public'))
+    );
 }
 
 function clean() {
-    return gulp
-        .src('./public/*.html')
-        .pipe(vinylPaths(del))
+    return gulp.src('./public/*.html').pipe(vinylPaths(del));
 }
 
 gulp.task('default', gulp.series(markup, styles, scripts, clean));
