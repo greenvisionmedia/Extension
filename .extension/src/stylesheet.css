@@ -68,25 +68,25 @@
 }
 
 /**MODAL**/
-#gv_pusherman::backdrop {
+.gv_pusherman::backdrop {
   position: absolute;
   width: 100%;
   height: 100vh;
   background-color: rgba(0, 0, 0, 0.8);
 }
 
-#gv_pusherman {
+.gv_pusherman {
   position: relative;
   background: var(--gray-600);
   border-radius: 3px;
   border: 1px solid var(--gray-800);
   box-shadow: rgba(0, 0, 0, 0.3);
-  width: 16rem;
   color: var(--gray-100);
   font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
   font-size: 12px;
-  width: 24rem;
+  width: 28rem;
   padding: 3rem 1rem 1rem 1rem;
+  will-change: transform;
 }
 
 /*Modal contents*/
@@ -231,16 +231,19 @@
 }
 
 .gv_drop-area {
-  min-height: 10rem;
+  position: relative;
+  min-height: 15rem;
   align-self: stretch;
   justify-self: stretch;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   border-style: solid;
   border-radius: 2px;
   border-width: 1px;
   color: var(--gray-350);
+  padding-top: 1.25rem;
 }
 
 .gv_text, .gv_drop-area {
@@ -323,6 +326,7 @@
 }
 
 #save, #restart {
+  margin-top: .75rem;
   background-color: var(--blue-400);
 }
 
@@ -355,4 +359,95 @@
 .pressed-state:disabled {
   background: var(--gray-500) !important;
   border-color: #3b3b3b !important
+}
+
+#upload-label {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  cursor: pointer;
+}
+
+#upload {
+ display: none;
+}
+
+#drop-text, #link {
+  height: 1.5rem;
+}
+
+#scripts, #script-row {
+  height: 2.5rem;
+}
+
+#script-row {
+  background: #333;
+  border-color: #2b2b2b;
+  padding: 7px;
+  display: flex;
+}
+
+#script-row span {
+  padding: 3px 7px 3px 7px;
+  background: var(--green-400);
+  border-radius: 3px;
+  cursor: disabled;
+  border-color:rgba(0, 0, 0, .5);
+  margin-right: 8px;
+  line-height: 1.6;
+}
+
+/* ANIMATION */
+dialog[open] {
+  animation: 275ms cubic-bezier(0.22, 1, 0.36, 1) 0s 1 normal both running open;
+}
+@keyframes open{
+  from {
+      opacity: 0.1;
+      transform: scale(0.88);
+  }
+  to {
+      opacity: 1;
+      transform: scale(1);
+  }
+}
+
+dialog.close {
+  animation: 100ms cubic-bezier(0.22, 1, 0.36, 1) 0s 1 normal both running close;
+}
+@keyframes close{
+  to {
+      opacity: 0.1;
+      transform: scale(0.88);
+  }
+}
+
+dialog::backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, .5);
+  animation: none;
+}
+dialog[open]::backdrop {
+  animation: 200ms cubic-bezier(0.22, 1, 0.36, 1) 0s 1 normal both running show-backdrop;
+}
+dialog.close::backdrop {
+  animation: 100ms cubic-bezier(0.22, 1, 0.36, 1) 0s 1 normal both running hide-backdrop;
+}
+@keyframes show-backdrop {
+  from {
+      opacity: 0;
+  }
+  to {
+      opacity: 1;
+  }
+}
+@keyframes hide-backdrop{
+  to {
+      opacity: 0;
+  }
 }

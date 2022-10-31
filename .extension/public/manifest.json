@@ -20,7 +20,6 @@
     "service_worker": "background.min.js"
   },
   "permissions": [
-    "scripting",
     "storage"
   ],
   "host_permissions": [
