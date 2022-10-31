@@ -1,27 +1,27 @@
 {
-  "name": "pusherman",
-  "version": "1.0.0",
-  "description": "I aint clean bad machine super cool super mean",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "directory": "github.com/greenvisionmedia/pusherman/tree/main/.extension"
-  },
-  "author": "Green Vision Media",
-  "license": "ISC",
-  "devDependencies": {
-    "del": "^4.1.1",
-    "gulp": "^4.0.2",
-    "gulp-cssnano": "^2.1.3",
-    "gulp-filter": "^7.0.0",
-    "gulp-htmlmin": "^5.0.1",
-    "gulp-postcss": "^8.0.0",
-    "gulp-rename": "^2.0.0",
-    "gulp-replace": "^1.1.2",
-    "gulp-terser": "^1.4.1",
-    "vinyl-paths": "^3.0.1"
-  }
+    "name": "pusherman",
+    "version": "1.0.0",
+    "description": "I aint clean bad machine super cool super mean",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "directory": "github.com/greenvisionmedia/pusherman/tree/main/.extension"
+    },
+    "author": "Green Vision Media",
+    "license": "ISC",
+    "devDependencies": {
+        "del": "^4.1.1",
+        "gulp": "^4.0.2",
+        "gulp-cssnano": "^2.1.3",
+        "gulp-filter": "^7.0.0",
+        "gulp-htmlmin": "^5.0.1",
+        "gulp-postcss": "^8.0.0",
+        "gulp-rename": "^2.0.0",
+        "gulp-replace": "^1.1.2",
+        "gulp-terser": "^1.4.1",
+        "vinyl-paths": "^3.0.1"
+    }
 }
