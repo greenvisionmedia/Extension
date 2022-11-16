@@ -68,14 +68,14 @@
 }
 
 /**MODAL**/
-.gv_pusherman::backdrop {
+.gv-pusherman::backdrop {
     position: absolute;
     width: 100%;
     height: 100vh;
     background-color: rgba(0, 0, 0, 0.8);
 }
 
-.gv_pusherman {
+.gv-pusherman {
     position: relative;
     background: var(--gray-600);
     border-radius: 3px;
@@ -92,22 +92,22 @@
 }
 
 /*Modal contents*/
-.gv_link {
+.gv-link {
     color: var(--gray-100) !important;
 }
 
-.gv_link:hover {
+.gv-link:hover {
     color: white !important;
 }
 
-.gv_link svg {
+.gv-link svg {
     position: relative;
     top: 0.1em;
     left: 0.3em;
     margin-right: 0.3em;
 }
 
-.gv_menu {
+.gv-menu {
     position: absolute;
     top: 0;
     left: 0;
@@ -123,12 +123,12 @@
     padding: 0 0.5rem 0 0.75rem;
 }
 
-.gv_title {
+.gv-title {
     font-weight: 600;
     font-size: 16px;
 }
 
-.gv_exit {
+.gv-exit {
     color: var(--gray-200);
     border-radius: 2px;
     display: grid;
@@ -138,12 +138,12 @@
     width: 1.5rem;
 }
 
-.gv_exit:hover {
+.gv-exit:hover {
     background: var(--gray-400);
     color: white;
 }
 
-.gv_exit div {
+.gv-exit div {
     width: 12px;
     height: 1.5px;
     background: currentcolor;
@@ -151,24 +151,24 @@
     grid-row: 1;
 }
 
-.gv_exit div:first-child {
+.gv-exit div:first-child {
     transform: rotate(45deg);
 }
 
-.gv_exit div:last-child {
+.gv-exit div:last-child {
     transform: rotate(-45deg);
 }
 
-.gv_subtitle {
+.gv-subtitle {
     color: var(--gray-200);
 }
 
-.gv_page {
+.gv-page {
     flex-direction: column;
     width: 100%;
 }
 
-.gv_container {
+.gv-container {
     margin-top: 1rem;
     display: flex;
     flex-direction: column;
@@ -176,7 +176,7 @@
     gap: 12px;
 }
 
-.gv_settings {
+.gv-settings {
     margin-top: 1rem;
     position: relative;
     border-style: none;
@@ -191,15 +191,15 @@
     cursor: pointer;
 }
 
-.gv_settings.on svg {
+.gv-settings.on svg {
     transform: rotate(90deg);
 }
 
-.gv_settings:hover {
+.gv-settings:hover {
     background: var(--gray-400);
 }
 
-.gv_label {
+.gv-label {
     font-size: 10px;
     align-self: flex-start;
     width: 100%;
@@ -208,22 +208,22 @@
     white-space: nowrap;
 }
 
-.gv_label.is-domain {
+.gv-label.is-domain {
     width: 0;
     font-size: 0.85em;
     margin-top: -1.5em;
     white-space: nowrap;
 }
 
-.gv_label.is-site-code {
+.gv-label.is-site-code {
     width: 0px;
     font-size: 0.85em;
     margin: -1.5em -1em 0 1em;
     white-space: nowrap;
 }
 
-.gv_text,
-.gv_button {
+.gv-text,
+.gv-button {
     padding: 7px 12px 7px 12px;
     color: var(--gray-100);
     font-size: 12px;
@@ -232,7 +232,7 @@
     border-width: 1px;
 }
 
-.gv_drop-area {
+.gv-drop-area {
     position: relative;
     min-height: 15rem;
     align-self: stretch;
@@ -250,22 +250,22 @@
     background: var(--gray-700);
 }
 
-.gv_text {
+.gv-text {
     border-color: var(--gray-900);
     background: var(--gray-800);
     outline: none;
     width: 100%;
 }
 
-.gv_text:focus {
+.gv-text:focus {
     outline: 1px solid var(--blue-500);
 }
 
-.gv_text:placeholder-shown {
+.gv-text:placeholder-shown {
     color: var(--gray-200);
 }
 
-.gv_button {
+.gv-button {
     border-width: 1px;
     border-color: var(--gray-700);
     background: var(--gray-400);
@@ -274,17 +274,17 @@
     width: 6rem;
 }
 
-.gv_button:hover {
+.gv-button:hover {
     cursor: pointer;
     background: var(--gray-350);
 }
 
-.gv_button:active {
+.gv-button:active {
     background: var(--gray-400);
 }
 
-.gv_button-row,
-.gv_text-row {
+.gv-button-row,
+.gv-text-row {
     width: 100%;
     display: flex;
     justify-content: space-around;
@@ -300,11 +300,11 @@
     margin-left: 8px;
 }
 
-.gv_button-row input {
+.gv-button-row input {
     width: 100% !important;
 }
 
-.gv_button-row input:active {
+.gv-button-row input:active {
     outline: 1px solid var(--blue-500);
 }
 
@@ -469,4 +469,24 @@ dialog.close::backdrop {
     to {
         opacity: 0;
     }
+}
+/*MAGIC PASTE*/
+.mp-container {
+    align-items: center;
+}
+
+.mp-info {
+    max-width: 75%;
+    margin-left: auto;
+}
+
+.mp-chip {
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-weight: bold;
+    padding: 3px 5px 3px 7px;
+    background: var(--green-400);
+    border-radius: 3px;
+    cursor: disabled;
+    border-color: rgba(0, 0, 0, 0.5);
 }

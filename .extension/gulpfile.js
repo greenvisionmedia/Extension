@@ -28,21 +28,16 @@ function styles() {
 }
 
 function scripts() {
-    return (
-        gulp
-            .src('./src/*.js')
-            //.pipe(terser())
-            .pipe(
-                replace('{{modal.html}}', function (s) {
-                    return `${fs.readFileSync(
-                        './public/modal.min.html',
-                        'utf8'
-                    )}`;
-                })
-            )
-            .pipe(rename({ suffix: '.min' }))
-            .pipe(gulp.dest('./public'))
-    );
+    return gulp
+        .src('./src/*.js')
+        .pipe(
+            replace('{{modal.html}}', () => {
+                return `${fs.readFileSync('./public/modal.min.html', 'utf8')}`;
+            })
+        )
+        .pipe(terser())
+        .pipe(rename({ suffix: '.min' }))
+        .pipe(gulp.dest('./public'));
 }
 
 function clean() {

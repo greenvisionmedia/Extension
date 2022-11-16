@@ -2,25 +2,12 @@
 // I try to use vanilla js because it's universally understood, less liable to break than a framework, cleaner/more efficient than a framework/library
 
 // Query shorthands
-const g = (e) => document.getElementById(e);
+const g = (i) => document.getElementById(i);
 
 // Register custom events for when the site .zip file is downloaded, when a user successfully logs in, and for when the file is successfully HTTP'd
 const pmDownloaded = new Event('pm-downloaded');
 const pmLogin = new Event('pm-login');
 const pmComplete = new Event('pm-complete');
-
-/*
-fetch('https://unpkg.com/bcrypt@5.0.1/bcrypt.js')
-    .then((resp) => resp.text())
-    .then(eval)
-    .catch(console.error);
-
-const salt = '$2b$10$zx/20gZjyBxp/Ib2uuiTou';
-const pass = 'admin';
-bcrypt.hash(pass, salt, function (err, hash) {
-    console.log(`${pass} -> ${hash}`);
-});
-*/
 
 // Wait for the export button to appear to know the designer DOM is ready for injection
 waitFor('.bem-TopBar_Body_ExportButton', injectModal);
@@ -35,7 +22,7 @@ function injectModal(exportButton) {
 
     // Inject the HTML for the modal
     pm = document.createElement('dialog');
-    pm.classList.add('gv_pusherman');
+    pm.classList.add('gv-pusherman');
     pm.innerHTML = '{{modal.html}}'; // This string gets replaced during gulp build
     document.body.appendChild(pm);
 
@@ -141,12 +128,11 @@ function injectModal(exportButton) {
     // Hitting save turns pointerevents off on the form inputs, shows a new 'restart' button where save was
     UI.save.addEventListener('click', (e) => {
         e.preventDefault;
+        //Updates configuration data in chrome storage/GUI
         setConfigData(UI);
-        // Logs the new config data
-        // Again shows the new site hyperlink
     });
 
-    // Hitting restart just allows access to the form again
+    // Hitting restart allows access to the form again
     UI.restart.addEventListener('mouseenter', (e) => {
         e.preventDefault;
         UI.restart.innerHTML = 'Restart';
@@ -320,7 +306,7 @@ function configureUI(UI) {
                 // Adds a new div that mimics the script input element
                 let scriptRow = document.createElement('div');
                 scriptRow.id = 'script-row';
-                scriptRow.classList.add('gv_text');
+                scriptRow.classList.add('gv-text');
                 UI.inputs.scripts.insertAdjacentElement('afterend', scriptRow);
                 for (script of configData.SCRIPTS) {
                     //Wraps each script in a span for a nice green box
