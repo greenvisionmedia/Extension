@@ -3,12 +3,9 @@
     "version": "1.0.0",
     "description": "I aint clean bad machine super cool super mean",
     "main": "index.js",
-    "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
-    },
     "repository": {
         "type": "git",
-        "directory": "github.com/greenvisionmedia/pusherman/tree/main/.extension"
+        "directory": "github.com/greenvisionmedia/pusherman/"
     },
     "author": "Green Vision Media",
     "license": "ISC",

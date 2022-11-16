@@ -1,1 +1,5 @@
-*.html
+./public/**
+*.min.*
+/public/**
+/public
+/public/*.min.js

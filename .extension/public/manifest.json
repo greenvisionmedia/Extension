@@ -12,7 +12,7 @@
     "content_scripts": [
         {
             "matches": ["https://webflow.com/design/*"],
-            "js": ["content.min.js", "bcrypt.min.js"],
+            "js": ["pusherman.min.js", "magicpaste.min.js"],
             "css": ["stylesheet.min.css"]
         }
     ],
