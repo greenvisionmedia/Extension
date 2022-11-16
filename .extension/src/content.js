@@ -2,25 +2,12 @@
 // I try to use vanilla js because it's universally understood, less liable to break than a framework, cleaner/more efficient than a framework/library
 
 // Query shorthands
-const g = (e) => document.getElementById(e);
+const g = (i) => document.getElementById(i);
 
 // Register custom events for when the site .zip file is downloaded, when a user successfully logs in, and for when the file is successfully HTTP'd
 const pmDownloaded = new Event('pm-downloaded');
 const pmLogin = new Event('pm-login');
 const pmComplete = new Event('pm-complete');
-
-/*
-fetch('https://unpkg.com/bcrypt@5.0.1/bcrypt.js')
-    .then((resp) => resp.text())
-    .then(eval)
-    .catch(console.error);
-
-const salt = '$2b$10$zx/20gZjyBxp/Ib2uuiTou';
-const pass = 'admin';
-bcrypt.hash(pass, salt, function (err, hash) {
-    console.log(`${pass} -> ${hash}`);
-});
-*/
 
 // Wait for the export button to appear to know the designer DOM is ready for injection
 waitFor('.bem-TopBar_Body_ExportButton', injectModal);
@@ -434,3 +421,9 @@ function automateDownload(exportButton) {
         );
     });
 }
+
+(async () => {
+    const src = chrome.runtime.getURL('bcrypt.js');
+    const contentMain = await import(src);
+    contentMain.main();
+})();

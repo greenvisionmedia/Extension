@@ -12,13 +12,13 @@
     "content_scripts": [
         {
             "matches": ["https://webflow.com/design/*"],
-            "js": ["content.min.js"],
+            "js": ["content.min.js", "bcrypt.min.js"],
             "css": ["stylesheet.min.css"]
         }
     ],
     "background": {
         "service_worker": "background.min.js"
     },
-    "permissions": ["storage"],
+    "permissions": ["storage", "scripting"],
     "host_permissions": ["https://webflow.com/design/*"]
 }
