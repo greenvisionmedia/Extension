@@ -491,3 +491,18 @@ dialog.close::backdrop {
     cursor: disabled;
     border-color: rgba(0, 0, 0, 0.5);
 }
+
+/***CARBON METER****/
+.pm-meter {
+    border-right: 1px solid var(--gray-700) !important;
+    padding: 0px 9px 0px 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 6em;
+}
+
+
+.pm-meter span:not(#meter) {
+    color: var(--gray-200);
+}
