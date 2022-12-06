@@ -1,4 +1,3 @@
-
 // PUSHERMAN
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -234,7 +233,7 @@ function injectModal(exportButton) {
 function resetUI(UI) {
     // Gets the stored values and inputs them into the modal settings
     chrome.storage.local.get(
-        ['PROJECT', 'DOMAIN', 'SITECODE', 'STAGING', 'SCRIPTS', 'LOGINSTATE'],
+        ['PROJECT', 'DOMAIN', 'SITE_CODE', 'STAGING', 'SCRIPTS', 'LOGIN_STATE'],
         (configData) => {
             UI.inputs.domain.value = configData.DOMAIN;
             UI.inputs.siteCode.value = configData.SITECODE;
@@ -248,7 +247,7 @@ function resetUI(UI) {
                 UI.inputs.release.classList.add('on');
             }
             // Sets the UI back to page 1 if user is not logged in, to page 2 otherwise
-            if (configData.LOGINSTATE === false) {
+            if (configData.LOGIN_STATE === false) {
                 UI.page1.classList.add('on');
                 UI.page2.classList.remove('on');
             } else {
@@ -275,22 +274,29 @@ function configureUI(UI) {
     // This sets the link at the top of the publish modal to be whichever URL your site will be published to, determined by the config settings
     // Also sets the link that appears at the end of the upload process
     chrome.storage.local.get(
-        ['PROJECT', 'DOMAIN', 'SITECODE', 'STAGING', 'SCRIPTS', 'CONFIGSTATE'],
+        [
+            'PROJECT',
+            'DOMAIN',
+            'SITE_CODE',
+            'STAGING',
+            'SCRIPTS',
+            'CONFIG_STATE',
+        ],
         (configData) => {
-            if (configData.CONFIGSTATE) {
+            if (configData.CONFIG_STATE) {
                 UI.inputs.domain.value = configData.DOMAIN;
-                UI.inputs.siteCode.value = configData.SITECODE;
+                UI.inputs.siteCode.value = configData.SITE_CODE;
                 UI.inputs.scripts.value = configData.SCRIPTS.join(', ');
                 if (configData.STAGING) {
                     UI.inputs.staging.classList.add('on');
                     UI.inputs.release.classList.remove('on');
                     UI.link.setAttribute(
                         'href',
-                        `https:// ${configData.SITECODE}.greenvisionmedia.net`
+                        `https:// ${configData.SITE_CODE}.greenvisionmedia.net`
                     );
                     UI.site.setAttribute(
                         'href',
-                        `https:// ${configData.SITECODE}.greenvisionmedia.net`
+                        `https:// ${configData.SITE_CODE}.greenvisionmedia.net`
                     );
                     UI.site.querySelector('span').innerHTML =
                         configData.SITECODE + '.greenvisionmedia.net';
@@ -367,7 +373,7 @@ function sendLogin(UI) {
             body: loginData,
         })
             .then(() => {
-                chrome.storage.local.set({ LOGINSTATE: true });
+                chrome.storage.local.set({ LOGIN_STATE: true });
                 document.dispatchEvent(pmLogin);
             }) // pmLogin should be updated when login succeeds, not just when data gets sent successfully
             .catch((e) => {
@@ -384,7 +390,7 @@ function sendData(file) {
     let formData = new FormData();
 
     chrome.storage.local.get(
-        ['PROJECT', 'DOMAIN', 'SITECODE', 'STAGING', 'SCRIPTS'],
+        ['PROJECT', 'DOMAIN', 'SITE_CODE', 'STAGING', 'SCRIPTS'],
         (configData) => {
             formData.append('file', file);
             formData.append('config-data', configData);
@@ -434,6 +440,11 @@ function automateDownload(exportButton) {
 
 // CARBON METER
 
+/**
+ * This gives an estimate of the CO2 that will be emitted by the website,
+ * were you to upload the code straight from WebFlow with no optimization
+ */
+
 waitFor('.bem-TopBar_Body_Group-left', injectMeter, 1000);
 
 function injectMeter(topBar) {
@@ -443,22 +454,16 @@ function injectMeter(topBar) {
         '<div class="pm-meter"><div><span id="meter">Xg </span><span>CO<sub>2</sub></span></div></div>'
     );
 
-    // Assign variables for the meter and the test site (using webflow subdomain for now)
+    // Get meter CO2 <span>
     let meter = g('meter');
-    
-    document.addEventListener('pm-complete', updateMeter(meter));
-}
 
-function updateMeter(meter) {
-    // Get GV subdomain
-    let sitecode = chrome.storage.local.get('SITECODE');
-    let site = `https:${sitecode}.greenvisionmedia.net`;
+    // Setup CO2.js object with the sustainable web design model (SWD)
+    const swd = new co2();
 
-    // Get website carbon data
-    fetch('https://api.websitecarbon.com/site?url=' + site).then(function (r) {
-        // Update meter HTML
-        let c = r.statistics.co2.renewable.grams.toPrecision(3);
-        meter.innerHTML = c + 'g ';
+    // When using the GV publish modal, update the carbon meter
+    document.addEventListener('pm-complete', () => {
+        let downloadSize = chrome.storage.local.get('DOWNLOAD_SIZE');
+        meter.innerHTML = swd.perByte(downloadSize);
     });
 }
 
