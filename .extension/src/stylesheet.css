@@ -1,5 +1,4 @@
-/*stylesheet.css*/
-
+/***PUSHERMAN***/
 /**UTILITY**/
 * {
     -webkit-font-smoothing: antialiased;
@@ -68,14 +67,14 @@
 }
 
 /**MODAL**/
-.gv-pusherman::backdrop {
+#pm::backdrop {
     position: absolute;
     width: 100%;
     height: 100vh;
     background-color: rgba(0, 0, 0, 0.8);
 }
 
-.gv-pusherman {
+#pm {
     position: relative;
     background: var(--gray-600);
     border-radius: 3px;
@@ -92,22 +91,22 @@
 }
 
 /*Modal contents*/
-.gv-link {
+.pm-link {
     color: var(--gray-100) !important;
 }
 
-.gv-link:hover {
+.pm-link:hover {
     color: white !important;
 }
 
-.gv-link svg {
+.pm-link svg {
     position: relative;
     top: 0.1em;
     left: 0.3em;
     margin-right: 0.3em;
 }
 
-.gv-menu {
+.pm-menu {
     position: absolute;
     top: 0;
     left: 0;
@@ -123,12 +122,12 @@
     padding: 0 0.5rem 0 0.75rem;
 }
 
-.gv-title {
+.pm-title {
     font-weight: 600;
     font-size: 16px;
 }
 
-.gv-exit {
+.pm-exit {
     color: var(--gray-200);
     border-radius: 2px;
     display: grid;
@@ -138,12 +137,12 @@
     width: 1.5rem;
 }
 
-.gv-exit:hover {
+.pm-exit:hover {
     background: var(--gray-400);
     color: white;
 }
 
-.gv-exit div {
+.pm-exit div {
     width: 12px;
     height: 1.5px;
     background: currentcolor;
@@ -151,24 +150,24 @@
     grid-row: 1;
 }
 
-.gv-exit div:first-child {
+.pm-exit div:first-child {
     transform: rotate(45deg);
 }
 
-.gv-exit div:last-child {
+.pm-exit div:last-child {
     transform: rotate(-45deg);
 }
 
-.gv-subtitle {
+.pm-subtitle {
     color: var(--gray-200);
 }
 
-.gv-page {
+.pm-page {
     flex-direction: column;
     width: 100%;
 }
 
-.gv-container {
+.pm-container {
     margin-top: 1rem;
     display: flex;
     flex-direction: column;
@@ -176,7 +175,7 @@
     gap: 12px;
 }
 
-.gv-settings {
+.pm-settings {
     margin-top: 1rem;
     position: relative;
     border-style: none;
@@ -191,15 +190,15 @@
     cursor: pointer;
 }
 
-.gv-settings.on svg {
+.pm-settings.on svg {
     transform: rotate(90deg);
 }
 
-.gv-settings:hover {
+.pm-settings:hover {
     background: var(--gray-400);
 }
 
-.gv-label {
+.pm-label {
     font-size: 10px;
     align-self: flex-start;
     width: 100%;
@@ -208,22 +207,22 @@
     white-space: nowrap;
 }
 
-.gv-label.is-domain {
+.pm-label.is-domain {
     width: 0;
     font-size: 0.85em;
     margin-top: -1.5em;
     white-space: nowrap;
 }
 
-.gv-label.is-site-code {
+.pm-label.is-site-code {
     width: 0px;
     font-size: 0.85em;
     margin: -1.5em -1em 0 1em;
     white-space: nowrap;
 }
 
-.gv-text,
-.gv-button {
+.pm-text,
+.pm-button {
     padding: 7px 12px 7px 12px;
     color: var(--gray-100);
     font-size: 12px;
@@ -232,7 +231,7 @@
     border-width: 1px;
 }
 
-.gv-drop-area {
+.pm-drop-area {
     position: relative;
     min-height: 15rem;
     align-self: stretch;
@@ -251,22 +250,22 @@
     background: var(--gray-700);
 }
 
-.gv-text {
+.pm-text {
     border-color: var(--gray-900);
     background: var(--gray-800);
     outline: none;
     width: 100%;
 }
 
-.gv-text:focus {
+.pm-text:focus {
     outline: 1px solid var(--blue-500);
 }
 
-.gv-text:placeholder-shown {
+.pm-text:placeholder-shown {
     color: var(--gray-200);
 }
 
-.gv-button {
+.pm-button {
     border-width: 1px;
     border-color: var(--gray-700);
     background: var(--gray-400);
@@ -275,17 +274,17 @@
     width: 6rem;
 }
 
-.gv-button:hover {
+.pm-button:hover {
     cursor: pointer;
     background: var(--gray-350);
 }
 
-.gv-button:active {
+.pm-button:active {
     background: var(--gray-400);
 }
 
-.gv-button-row,
-.gv-text-row {
+.pm-button-row,
+.pm-text-row {
     width: 100%;
     display: flex;
     justify-content: space-around;
@@ -301,11 +300,11 @@
     margin-left: 8px;
 }
 
-.gv-button-row input {
+.pm-button-row input {
     width: 100% !important;
 }
 
-.gv-button-row input:active {
+.pm-button-row input:active {
     outline: 1px solid var(--blue-500);
 }
 
@@ -471,7 +470,8 @@ dialog.close::backdrop {
         opacity: 0;
     }
 }
-/*MAGIC PASTE*/
+
+/***MAGIC PASTE***/
 .mp-container {
     align-items: center;
 }

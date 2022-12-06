@@ -1,7 +1,11 @@
-// // PUSHERMAN CONTENT SCRIPT
-// I try to use vanilla js because it's universally understood, less liable to break than a framework, cleaner/more efficient than a framework/library
 
-// Query shorthands
+// PUSHERMAN
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// PUBLISH MODAL
+
+// Query shorthand
 const g = (i) => document.getElementById(i);
 
 // Register custom events for when the site .zip file is downloaded, when a user successfully logs in, and for when the file is successfully HTTP'd
@@ -9,10 +13,21 @@ const pmDownloaded = new Event('pm-downloaded');
 const pmLogin = new Event('pm-login');
 const pmComplete = new Event('pm-complete');
 
-// Wait for the export button to appear to know the designer DOM is ready for injection
-waitFor('.bem-TopBar_Body_ExportButton', injectModal);
+// Wait for DOM elements to appear, avoids querying bits of the WF designer that don't exist yet
+function waitFor(waitClass, callback, interval) {
+    let wait = setInterval(() => {
+        let waitNode = document.querySelector(waitClass);
+        if (waitNode) {
+            clearInterval(wait);
+            callback(waitNode);
+        }
+    }, interval);
+}
 
-// // PUSHERMAN CONFIG MODAL
+// Wait for the export button to appear to know the designer DOM is ready for injection
+waitFor('.bem-TopBar_Body_ExportButton', injectModal, 1000);
+
+// Add all the markup for the modal
 function injectModal(exportButton) {
     // Inject HTML for modal button
     exportButton.insertAdjacentHTML(
@@ -22,7 +37,7 @@ function injectModal(exportButton) {
 
     // Inject the HTML for the modal
     pm = document.createElement('dialog');
-    pm.classList.add('gv-pusherman');
+    pm.id = 'pm';
     pm.innerHTML = '{{modal.html}}'; // This string gets replaced during gulp build
     document.body.appendChild(pm);
 
@@ -215,19 +230,9 @@ function injectModal(exportButton) {
     });
 }
 
-// Wait for DOM elements to appear, avoids querying bits of the WF designer that don't exist yet
-function waitFor(waitClass, callback) {
-    let interval = setInterval(() => {
-        let waitNode = document.querySelector(waitClass);
-        if (waitNode) {
-            clearInterval(interval);
-            callback(waitNode);
-        }
-    }, 10);
-}
-
 // Function to reset the UI to the beginning state whenever user closes modal, and whenever webflow is reloaded
 function resetUI(UI) {
+    // Gets the stored values and inputs them into the modal settings
     chrome.storage.local.get(
         ['PROJECT', 'DOMAIN', 'SITECODE', 'STAGING', 'SCRIPTS', 'LOGINSTATE'],
         (configData) => {
@@ -306,7 +311,7 @@ function configureUI(UI) {
                 // Adds a new div that mimics the script input element
                 let scriptRow = document.createElement('div');
                 scriptRow.id = 'script-row';
-                scriptRow.classList.add('gv-text');
+                scriptRow.classList.add('pm-text');
                 UI.inputs.scripts.insertAdjacentElement('afterend', scriptRow);
                 for (script of configData.SCRIPTS) {
                     //Wraps each script in a span for a nice green box
@@ -334,7 +339,7 @@ function setConfigData(UI) {
         stagingBool = false;
     }
 
-    let projectString = window.location.pathname.split('/')[2]; // gets WF project name from URL
+    const projectString = window.location.pathname.split('/')[2]; // gets WF project name from URL
     let scriptArray = UI.inputs.scripts.value.split(', '); // Gets an array of script strings from comma+space delimited list
 
     chrome.storage.local
@@ -351,7 +356,7 @@ function setConfigData(UI) {
 
 // Sends the login data to the server and sets a loginState bool that affects resetUI()
 function sendLogin(UI) {
-    let url = 'https:// pusherman.free.beeceptor.com';
+    const url = '';
     let loginData = {
         username: UI.username.value,
         password: UI.password.value,
@@ -375,7 +380,7 @@ function sendLogin(UI) {
 
 // Send .zip and config data to server
 function sendData(file) {
-    let url = 'https:// pusherman.free.beeceptor.com';
+    const url = '';
     let formData = new FormData();
 
     chrome.storage.local.get(
@@ -404,19 +409,205 @@ function automateDownload(exportButton) {
     let parentClass =
         'div[style="display: flex; justify-content: space-between; flex: 0 1 auto;"]';
 
-    waitFor(parentClass + ' button:nth-child(4)', (zipButton) => {
-        zipButton.click();
+    waitFor(
+        parentClass + ' button:nth-child(4)',
+        (zipButton) => {
+            zipButton.click();
 
-        waitFor(
-            parentClass + ' a[href^="blob:"]',
-            (downloadButton) => {
-                downloadButton.click();
-                document.dispatchEvent(pmDownloaded);
-                document
-                    .querySelector(parentClass + ' button:nth-child(3)')
-                    .click(); // Exits download modal
-            },
-            10
-        );
+            waitFor(
+                parentClass + ' a[href^="blob:"]',
+                (downloadButton) => {
+                    downloadButton.click();
+                    document.dispatchEvent(pmDownloaded);
+                    document
+                        .querySelector(parentClass + ' button:nth-child(3)')
+                        .click(); // Exits download modal
+                },
+                10
+            );
+        },
+        10
+    );
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// CARBON METER
+
+waitFor('.bem-TopBar_Body_Group-left', injectMeter, 1000);
+
+function injectMeter(topBar) {
+    //Inject HTML for CO2 meter
+    topBar.insertAdjacentHTML(
+        'beforeEnd',
+        '<div class="pm-meter"><div><span id="meter">Xg </span><span>CO<sub>2</sub></span></div></div>'
+    );
+
+    // Assign variables for the meter and the test site (using webflow subdomain for now)
+    let meter = g('meter');
+    
+    document.addEventListener('pm-complete', updateMeter(meter));
+}
+
+function updateMeter(meter) {
+    // Get GV subdomain
+    let sitecode = chrome.storage.local.get('SITECODE');
+    let site = `https:${sitecode}.greenvisionmedia.net`;
+
+    // Get website carbon data
+    fetch('https://api.websitecarbon.com/site?url=' + site).then(function (r) {
+        // Update meter HTML
+        let c = r.statistics.co2.renewable.grams.toPrecision(3);
+        meter.innerHTML = c + 'g ';
     });
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// MAGIC CLIPBOARD
+
+// Clipboard datatypes
+const TYPE_HTML = 'text/html';
+const TYPE_PLAIN = 'text/plain';
+
+/**
+ * Designed to replace the clipboard data when pasting from Illustrator with a minified version
+ * This is aggressive minification - removes most attributes, <defs> tag, and all classes and ids
+ * This also aint real minification - doesn't remove line breaks or do any rounding, just removes clutter
+ *
+ * I copied this code structure from this extension: https://github.com/evanfrawley/magicpaste,
+ * and adapted it to minify SVG instead of convert markdown -> rich text.
+ */
+
+// Store the string I know will prefix all illustrator copypastes
+const svgRegex = /^<\?xml version="1.0" encoding="UTF-8"\?>\s*/;
+
+//Wait for an embed modal to appear in the dom
+waitFor('.w-codemirror', getEmbedInput, 1000);
+
+//Start paste process when user focuses the embed modal
+function getEmbedInput(embedInput) {
+    embedInput.addEventListener('click', pasteSVG);
+    embedInput.addEventListener('copy', pasteSVG);
+    embedInput.addEventListener('focus', pasteSVG);
+    waitFor('.w-codemirror', getEmbedInput, 1000);
+}
+
+// Using regex to remove parts of the text
+async function minifySVG(text) {
+    let minifiedText = text
+        .replace(svgRegex, '') // Gets rid of XML prolog
+        .replace(/(?:<defs>(?:[\s\S]*)<\/defs>\n)/, '') // Gets rid of the entire <defs> tag
+        .replace(/(?:id="(?:.+)"\s)/g, '') // Gets rid of unwanted attributes in the <svg>
+        .replace(/(?:class="(?:.+)"\s)/g, '');
+
+    return minifiedText;
+}
+
+async function pasteSVG() {
+    const text = await navigator.clipboard.readText();
+    if (svgRegex.test(text)) {
+        const minifiedText = await minifySVG(text);
+        await navigator.clipboard.writeText(minifiedText);
+    }
+}
+
+/**
+ * This is almost identical to the code for Evan Frawley's magicpaste extension
+ * Allows you to paste markdown straight into the Webflow CMS rich text entry field
+ *
+ * I changed it to use the reusable waitFor function, and changed the regex key phrase to '@markdown'
+ */
+
+const markdownRegex = /^@markdown\s*/;
+const markdownStringNoNewLine = '@markdown';
+
+waitFor('.bem-RichTextInput', getRichTextInput, 1000);
+
+function getRichTextInput(richTextInput) {
+    const infoContainerContainer =
+        richTextInput.parentElement.querySelector('div.bem-Field_Head');
+    if (!infoContainerContainer) return;
+    const infoContainer = infoContainerContainer.querySelector('div.bem-View');
+    if (!infoContainer) return;
+    infoContainer.classList.add('mp-container');
+    richTextInput.addEventListener('click', pasteMarkdown);
+    richTextInput.addEventListener('copy', pasteMarkdown);
+    richTextInput.addEventListener('focus', pasteMarkdown);
+    const info = document.createElement('div');
+    info.innerHTML =
+        'When pasting Markdown, make sure the contents start with <span class="mp-chip">@markdown</span> on its own line. <a class="mp-link" href="https://greenvision.media/docs/build-process/" target="_blank">Learn More</a>';
+    info.classList.add('mp-info');
+    infoContainer.appendChild(info);
+}
+
+async function formatMarkdownToHTML(text) {
+    const markdownContents = text
+        .replace(/\u00A0\//g, ' ')
+        .replace(markdownRegex, '');
+    const formattedText = markdown(markdownContents);
+
+    return formattedText;
+}
+
+async function HTMLtoClipboard(str) {
+    const newBlob = new Blob([str], { type: TYPE_HTML });
+    const data = [new ClipboardItem({ [TYPE_HTML]: newBlob })];
+    await navigator.clipboard.write(data);
+}
+
+async function pasteMarkdown() {
+    const clipboardItems = await navigator.clipboard.read();
+    for (const clipboardItem of clipboardItems) {
+        for (const type of clipboardItem.types) {
+            const blob = await clipboardItem.getType(type);
+            const text = await blob.text();
+
+            if (type === TYPE_PLAIN && markdownRegex.test(text)) {
+                const htmlString = await formatMarkdownToHTML(text);
+                await HTMLtoClipboard(htmlString);
+            } else if (type === TYPE_HTML) {
+                const parser = new DOMParser();
+                const htmlDoc = parser.parseFromString(text, TYPE_HTML);
+                const body = htmlDoc.querySelector('body');
+
+                if (!body.textContent.startsWith(markdownStringNoNewLine))
+                    return;
+
+                let items = [];
+                if (body.children.length >= 2) {
+                    items = Array.from(body.children);
+                } else if (
+                    body.children.length === 1 &&
+                    body.children[0].tagName.toLowerCase() === 'div' &&
+                    body.children[0].children.length >= 2
+                ) {
+                    items = Array.from(body.children[0].children);
+                } else {
+                    return;
+                }
+
+                items = items
+                    .filter((item) => item.tagName.toLowerCase() !== 'meta')
+                    .slice(1); // get rid of the markdown
+
+                const formattedHTMLStrings = [];
+                for (let i = 0; i < items.length; i++) {
+                    const item = items[i];
+                    let str;
+                    const name = item.tagName.toLowerCase();
+                    if (name === 'p' || name === 'div') {
+                        str = await formatMarkdownToHTML(item.textContent);
+                    } else {
+                        str = item.outerHTML;
+                    }
+                    formattedHTMLStrings.push(str);
+                }
+
+                if (formattedHTMLStrings.length === 0) return;
+
+                await HTMLtoClipboard(formattedHTMLStrings.join('\n'));
+            }
+        }
+    }
 }
