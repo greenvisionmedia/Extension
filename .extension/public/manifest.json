@@ -19,6 +19,6 @@
     "background": {
         "service_worker": "background.min.js"
     },
-    "permissions": ["storage", "scripting"],
+    "permissions": ["storage", "scripting", "downloads"],
     "host_permissions": ["https://webflow.com/design/*"]
 }
