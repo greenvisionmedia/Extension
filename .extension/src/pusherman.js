@@ -362,7 +362,7 @@ function setConfigData(UI) {
 
 // Sends the login data to the server and sets a loginState bool that affects resetUI()
 function sendLogin(UI) {
-    const url = '';
+    const url = 'http://localhost:5555/api/v1/login';
     let loginData = {
         username: UI.username.value,
         password: UI.password.value,
@@ -386,7 +386,7 @@ function sendLogin(UI) {
 
 // Send .zip and config data to server
 function sendData(file) {
-    const url = '';
+    const url = 'http://localhost:5555/api/v1/config';
     let formData = new FormData();
 
     chrome.storage.local.get(
@@ -436,7 +436,7 @@ function automateDownload(exportButton) {
     );
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // CARBON METER
 
@@ -458,12 +458,12 @@ function injectMeter(topBar) {
     let meter = g('meter');
 
     // Setup CO2.js object with the sustainable web design model (SWD)
-    const swd = new co2();
+    const swd = new co2.co2();
 
     // When using the GV publish modal, update the carbon meter
     document.addEventListener('pm-complete', () => {
         let downloadSize = chrome.storage.local.get('DOWNLOAD_SIZE');
-        meter.innerHTML = swd.perByte(downloadSize);
+        meter.innerHTML = swd.perByte(downloadSize).toPrecision(3) + 'g ';
     });
 }
 
