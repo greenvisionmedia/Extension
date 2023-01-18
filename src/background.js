@@ -11,21 +11,8 @@ chrome.runtime.onInstalled.addListener(() => {
         LOGIN_STATE: false,
         CONFIG_STATE: false,
         DOWNLOAD_SIZE: 0,
+        SVG_STATE: false
     });
-});
-
-chrome.storage.onChanged.addListener(() => {
-    let configData = chrome.storage.local.get([
-        'PROJECT',
-        'DOMAIN',
-        'SITE_CODE',
-        'SCRIPTS',
-        'STAGING',
-        'LOGIN_STATE',
-        'CONFIG_STATE',
-        'DOWNLOAD_SIZE'
-    ]);
-    console.log(configData);
 });
 
 chrome.downloads.onCreated.addListener((item) => {

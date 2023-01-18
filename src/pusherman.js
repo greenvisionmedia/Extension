@@ -1,21 +1,26 @@
-// PUSHERMAN
+// GREENVISION EXTENSION
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// PUBLISH MODAL
+/**
+ * A chrome extension that adds functionality to the Webflow designer,
+ * built and maintained by the Greenvision team.
+ *
+ * Aims to streamlines the process of creating no-code websites
+ * according to sustainable web design (SWD) principles.
+ *
+ * Makes it easier and more viable to host Webflow sites on green servers,
+ * to use lightweight SVG graphics and markup on Webflow sites,
+ * and to monitor the carbon footprint of the website you're designing.
+ *
+ * Read more: https://greenvision.media/docs/extension
+ */
 
 // Query shorthand
 const g = (i) => document.getElementById(i);
 
-// Register custom events for when the site .zip file is downloaded, when a user successfully logs in, and for when the file is successfully HTTP'd
-const pmDownloaded = new Event('pm-downloaded');
-const pmLogin = new Event('pm-login');
-const pmComplete = new Event('pm-complete');
-
-// Wait for DOM elements to appear, avoids querying bits of the WF designer that don't exist yet
+// Wait for DOM elements to appear, avoids querying bits of the Webflow designer that haven't loaded yet
 function waitFor(waitClass, callback, interval) {
-    let wait = setInterval(() => {
-        let waitNode = document.querySelector(waitClass);
+    const wait = setInterval(() => {
+        const waitNode = document.querySelector(waitClass);
         if (waitNode) {
             clearInterval(wait);
             callback(waitNode);
@@ -23,25 +28,48 @@ function waitFor(waitClass, callback, interval) {
     }, interval);
 }
 
-// Wait for the export button to appear to know the designer DOM is ready for injection
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// PUBLISH MODAL (PUSHERMAN)
+
+/**
+ * This speeds up the process of exporting code from Webflow and uploading it to the server.
+ *
+ * Rather than downloading the .zip, uncompressing it, uploading to github/udesly/netlify etc.,
+ * you just hit publish. The zip gets downloaded automatically, at which point you can drag it
+ * straight back into an upload modal, all without ever leaving Webflow.
+ *
+ * Our backend service takes care of the rest, passing it straight to either the final release domain
+ * or a staging domain, and making other changes according to the settings which are recorded by the UI
+ * in this modal.
+ */
+
+// Register custom events for when the site .zip file is downloaded,
+// when a user successfully logs in, and whenever files are successfully uploaded
+const pmDownloaded = new Event('pm-downloaded');
+const pmLogin = new Event('pm-login');
+const pmComplete = new Event('pm-complete');
+
+// Wait for the export button to appear in the DOM
 waitFor('.bem-TopBar_Body_ExportButton', injectModal, 1000);
 
 // Add all the markup for the modal
 function injectModal(exportButton) {
-    // Inject HTML for modal button
+    // Inject HTML for publish modal button
     exportButton.insertAdjacentHTML(
         'beforeBegin',
         '<div id="modal-button"><svg aria-hidden="true" focusable="false" width="17" height="17" viewBox="0 0 17 19"><path d="M12.6,19.2c-4.1-2.2-7.7-5.2-11.1-8.3,0,0-1.5-1.4-1.5-1.4C3.1,6.2,6.3,3,9.7,0c2.6,2.8,5.2,5.9,7.4,9.1-2,1.5-4,2.9-6.3,4,1-1.9,2.2-3.6,3.4-5.3v1.9c-2.2-1.6-4.3-3.5-6.3-5.3,0,0,3,0,3,0-2.1,2.2-4.3,4.3-6.5,6.4v-3c3.1,3.5,6,7.1,8.1,11.3h0Z"></path></svg></div>'
     );
 
     // Inject the HTML for the modal
-    pm = document.createElement('dialog');
-    pm.id = 'pm';
-    pm.innerHTML = '{{modal.html}}'; // This string gets replaced during gulp build
-    document.body.appendChild(pm);
+    modal = document.createElement('dialog');
+    modal.id = 'modal';
+    modal.innerHTML = '{{modal.html}}'; // This string gets replaced during gulp build by ./modal.html
+    modal.closeModal = closeModal; // Custom modal close method, see below
+    document.body.appendChild(modal);
 
+    // Loading the interactive parts of the UI as an object that can get passed into various other functions
     const UI = {
-        modal: pm,
         modalButton: g('modal-button'),
         exit: g('exit'),
         page1: g('page-1'),
@@ -76,28 +104,37 @@ function injectModal(exportButton) {
         },
     };
 
-    resetUI(UI); // Resets various UI state changes
-    configureUI(UI); // Sets the advanced options menu to the configured state
+    resetModal(UI); // Resets various UI state changes using stored chrome variables
+    configureModal(UI); // Sets the advanced options menu to the configured state
 
     // Toggle modal
     UI.modalButton.addEventListener('click', (e) => {
         e.preventDefault;
-        UI.modal.showModal();
+        modal.showModal();
     });
 
     // Close the modal
     UI.exit.addEventListener('click', (e) => {
         e.preventDefault;
-        UI.modal.classList.add('close');
-        setTimeout(() => {
-            // This is to get the closing animation to work, the timeout is the same as the animate-duration
-            UI.modal.classList.remove('close');
-            UI.modal.close();
-
-            resetUI(UI);
-        }, 100);
+        modal.closeModal();
+        resetModal(UI);
     });
 
+    UI.cancel.addEventListener('click', (e) => {
+        e.preventDefault;
+        modal.closeModal();
+        resetModal(UI);
+    });
+
+    document.addEventListener('keyup', (e) => {
+        e.preventDefault;
+        if (e.key === 'Escape') {
+            modal.closeModal();
+            resetModal(UI);
+        }
+    });
+
+    // Handle login
     UI.login.addEventListener('click', (e) => {
         e.preventDefault;
         sendLogin(UI);
@@ -106,17 +143,6 @@ function injectModal(exportButton) {
     document.addEventListener('pm-login', (e) => {
         UI.page1.classList.remove('on');
         UI.page2.classList.add('on');
-    });
-
-    // This is identical to the exit listener
-    UI.cancel.addEventListener('click', (e) => {
-        UI.modal.classList.add('close');
-        setTimeout(() => {
-            UI.modal.classList.remove('close');
-            UI.modal.close();
-
-            resetUI(UI);
-        }, 100);
     });
 
     // Toggle advanced options
@@ -142,21 +168,17 @@ function injectModal(exportButton) {
     // Hitting save turns pointerevents off on the form inputs, shows a new 'restart' button where save was
     UI.save.addEventListener('click', (e) => {
         e.preventDefault;
-        //Updates configuration data in chrome storage/GUI
-        setConfigData(UI);
+        Object.values(UI.inputs).forEach((e) => {
+            e.disabled = true;
+        });
+        UI.save.classList.remove('on');
+        UI.restart.classList.add('on');
+
+        setConfigData(UI); //Updates configuration data in chrome storage/GUI
     });
 
-    // Hitting restart allows access to the form again
-    UI.restart.addEventListener('mouseenter', (e) => {
-        e.preventDefault;
-        UI.restart.innerHTML = 'Restart';
-    });
-    UI.restart.addEventListener('mouseleave', (e) => {
-        e.preventDefault;
-        UI.restart.innerHTML = 'Configured';
-    });
+    // Hitting restart undoes the previous changes and allows access to the form again
     UI.restart.addEventListener('click', (e) => {
-        // Undoes the save button
         e.preventDefault;
         Object.values(UI.inputs).forEach((e) => {
             e.disabled = false;
@@ -167,7 +189,17 @@ function injectModal(exportButton) {
         g('script-row').remove(); // Removes the fancy script UI
     });
 
-    // Hitting publish shows the drag and drop page and begins automating the download
+    // By default the restart button shows 'Configured'; hovering over the restart button shows the text 'Restart'
+    UI.restart.addEventListener('mouseenter', (e) => {
+        e.preventDefault;
+        UI.restart.innerHTML = 'Restart';
+    });
+    UI.restart.addEventListener('mouseleave', (e) => {
+        e.preventDefault;
+        UI.restart.innerHTML = 'Configured';
+    });
+
+    // Hitting publish shows the drag and drop page with the loading wheel, and begins automating the download
     UI.publish.addEventListener('click', (e) => {
         UI.page2.classList.remove('on');
         UI.page3.classList.add('on');
@@ -175,7 +207,7 @@ function injectModal(exportButton) {
         automateDownload(exportButton);
     });
 
-    // Shows file icon, alerts user that their file was downloaded
+    // Alerts user that their file was downloaded and replaces the loading wheel with a file upload icon
     document.addEventListener('pm-downloaded', () => {
         UI.icons.loading.classList.remove('on');
         UI.icons.file.classList.add('on');
@@ -183,7 +215,7 @@ function injectModal(exportButton) {
         UI.dropText.innerHTML = 'Drag your folder here, or click to upload';
     });
 
-    // Draggging files over the drop area adds a css class; dropping sends an XHR
+    // Dragging files over the drop area changes styles to alert the user; dropping the file sends a fetch request to the backend
     UI.dropArea.addEventListener('dragenter', (e) => {
         e.preventDefault;
         UI.dropArea.classList.add('on');
@@ -204,11 +236,10 @@ function injectModal(exportButton) {
         UI.dropArea.classList.remove('on');
         UI.dropText.innerHTML = 'Publishing your files...';
 
-        let f = e.dataTransfer; // ** I need to make absolutely sure that this.....
-        sendData(f);
+        sendData(e.dataTransfer);
     });
 
-    // An input button as an alternative to dragging and dropping (nice if you accidentally close the download bar or something)
+    // Ads the ability to use the upload field as an input button, as an alternative to dragging and dropping
     UI.upload.addEventListener('change', (e) => {
         e.preventDefault;
         UI.icons.file.classList.remove('on');
@@ -216,11 +247,10 @@ function injectModal(exportButton) {
         UI.uploadLabel.classList.remove('on');
         UI.dropText.innerHTML = 'Publishing your files...';
 
-        let f = this.files; // ** ....Is the same as this
-        sendData(f);
+        sendData(this.files);
     });
 
-    // Shows checkmark icon and link to published site. Congrats!!
+    // Shows checkmark icon and link to published site. Congrats!! Ya did it
     document.addEventListener('pm-complete', () => {
         UI.icons.loading.classList.remove('on');
         UI.icons.complete.classList.add('on');
@@ -229,8 +259,17 @@ function injectModal(exportButton) {
     });
 }
 
-// Function to reset the UI to the beginning state whenever user closes modal, and whenever webflow is reloaded
-function resetUI(UI) {
+// Method to close the UI, which is a bit more complicated than just modal.close() because of the animation
+function closeModal() {
+    this.classList.add('close');
+    setTimeout(() => {
+        this.classList.remove('close');
+        this.close();
+    }, 100);
+}
+
+// Function to reset the UI to the beginning state whenever user closes modal, and whenever Webflow is reloaded
+function resetModal(UI) {
     // Gets the stored values and inputs them into the modal settings
     chrome.storage.local.get(
         ['PROJECT', 'DOMAIN', 'SITE_CODE', 'STAGING', 'SCRIPTS', 'LOGIN_STATE'],
@@ -270,7 +309,7 @@ function resetUI(UI) {
 }
 
 // Ensures the advanced options UI is configured based on the current settings
-function configureUI(UI) {
+function configureModal(UI) {
     // This sets the link at the top of the publish modal to be whichever URL your site will be published to, determined by the config settings
     // Also sets the link that appears at the end of the upload process
     chrome.storage.local.get(
@@ -313,11 +352,16 @@ function configureUI(UI) {
                     );
                     UI.site.querySelector('span').innerHTML = configData.DOMAIN;
                 }
+
+                // This is some code I wrote to give nice styles to the list of scripts, reminiscent of Webflow's class adder UI
                 // Pretty much useless, but makes it more obvious which scripts are going to be added and looks cool
-                // Adds a new div that mimics the script input element
-                let scriptRow = document.createElement('div');
+
+                // Adds a new div that sits on top of the existing script input element
+                const scriptRow = document.createElement('div');
                 scriptRow.id = 'script-row';
                 scriptRow.classList.add('pm-text');
+
+                // Adds the scripts
                 UI.inputs.scripts.insertAdjacentElement('afterend', scriptRow);
                 for (script of configData.SCRIPTS) {
                     //Wraps each script in a span for a nice green box
@@ -338,6 +382,7 @@ function configureUI(UI) {
 
 // Write and store configuration data
 function setConfigData(UI) {
+    // Reads the class on the fake radio buttons and sets a boolean accordingly
     let stagingBool = true;
     if (UI.inputs.staging.classList.contains('on')) {
         stagingBool = true;
@@ -345,22 +390,22 @@ function setConfigData(UI) {
         stagingBool = false;
     }
 
-    const projectString = window.location.pathname.split('/')[2]; // gets WF project name from URL
-    let scriptArray = UI.inputs.scripts.value.split(', '); // Gets an array of script strings from comma+space delimited list
+    const projectString = window.location.pathname.split('/')[2]; // Gets WF project name from URL
+    let scriptArray = UI.inputs.scripts.value.split(', '); // Gets an array of script strings from comma + space delimited list
 
     chrome.storage.local
         .set({
             PROJECT: projectString,
             DOMAIN: UI.inputs.domain.value,
-            SITECODE: UI.inputs.siteCode.value,
+            SITE_CODE: UI.inputs.siteCode.value,
             SCRIPTS: scriptArray,
             STAGING: stagingBool,
-            CONFIGSTATE: true,
+            CONFIG_STATE: true,
         })
-        .then(configureUI(UI));
+        .then(configureModal(UI));
 }
 
-// Sends the login data to the server and sets a loginState bool that affects resetUI()
+// Sends the login data to the server and sets a loginState bool that affects resetModal()
 function sendLogin(UI) {
     const url = '';
     let loginData = {
@@ -408,11 +453,11 @@ function sendData(file) {
     );
 }
 
-// Automate download process
-// /Janky but works!
+// Automate download process using queries and .click() to mimic the user downloading the file
+// Janky, but it works! A more performant way might use mutation observers and promise chains
 function automateDownload(exportButton) {
     exportButton.click();
-    let parentClass =
+    const parentClass =
         'div[style="display: flex; justify-content: space-between; flex: 0 1 auto;"]';
 
     waitFor(
@@ -441,29 +486,40 @@ function automateDownload(exportButton) {
 // CARBON METER
 
 /**
- * This gives an estimate of the CO2 that will be emitted by the website,
- * were you to upload the code straight from WebFlow with no optimization
+ * This gives an estimate of the CO2 that will be emitted by the finished website.
+ *
+ * Uses co2.js https://developers.thegreenwebfoundation.org/co2js/overview/
+ *
+ * Useful in conjunction with a 'carbon budget' - similar to a website performance budget,
+ * where the designer comes up with a maximum number of grams of carbon that the final site
+ * should emit when it is viewed.
  */
 
+// Setup CO2.js object with the sustainable web design model
+const swd = new co2.co2();
+
+// Wait for the part of the top bar where the preview icon
 waitFor('.bem-TopBar_Body_Group-left', injectMeter, 1000);
 
 function injectMeter(topBar) {
     //Inject HTML for CO2 meter
     topBar.insertAdjacentHTML(
         'beforeEnd',
-        '<div class="pm-meter"><div><span id="meter">Xg </span><span>CO<sub>2</sub></span></div></div>'
+        '<div class="pm-meter"><div><span id="meter">X.Xg </span><span>CO<sub>2</sub></span></div></div>'
     );
 
-    // Get meter CO2 <span>
-    let meter = g('meter');
-
-    // Setup CO2.js object with the sustainable web design model (SWD)
-    const swd = new co2();
+    // Get the <span> where the CO2 value will go
+    const meter = g('meter');
 
     // When using the GV publish modal, update the carbon meter
-    document.addEventListener('pm-complete', () => {
-        let downloadSize = chrome.storage.local.get('DOWNLOAD_SIZE');
-        meter.innerHTML = swd.perByte(downloadSize);
+    document.addEventListener('pm-downloaded', () => {
+        chrome.storage.local.get('DOWNLOAD_SIZE', (configData) => {
+            // Get carbon from download size
+            let emissions = swd.perByte(configData.DOWNLOAD_SIZE);
+
+            // Update UI
+            meter.innerHTML = emissions.toPrecision(2) + 'g ';
+        });
     });
 }
 
@@ -471,148 +527,152 @@ function injectMeter(topBar) {
 
 // MAGIC CLIPBOARD
 
-// Clipboard datatypes
-const TYPE_HTML = 'text/html';
-const TYPE_PLAIN = 'text/plain';
-
 /**
- * Designed to replace the clipboard data when pasting from Illustrator with a minified version
- * This is aggressive minification - removes most attributes, <defs> tag, and all classes and ids
- * This also aint real minification - doesn't remove line breaks or do any rounding, just removes clutter
+ * Designed to modify the clipboard data when pasting into a Webflow embed block. Inspired by this extension: https://github.com/evanfrawley/magicpaste
  *
- * I copied this code structure from this extension: https://github.com/evanfrawley/magicpaste,
- * and adapted it to minify SVG instead of convert markdown -> rich text.
+ * Automatically converts markdown to HTML.
+ * Useful when you have many <pre> and <code> tags that don't translate well to Webflow
+ * To paste into WF, write '<!--gv-markdown->' on its own line at the top of the document
+ *
+ * Automatically minifies SVG pasted from Illustrator.
+ * Useful if you want to add global CSS properties like fill: and stroke:
+ * or global SVG elements like <filter> and <gradient>
+ *
+ * Should be extensible if we need other clipboard modification stuff
  */
 
-// Store the string I know will prefix all illustrator copypastes
-const svgRegex = /^<\?xml version="1.0" encoding="UTF-8"\?>\s*/;
+// Store the string I know will prefix all Illustrator copy-pastes,
+// and inventing a string that will prefix all markdown copy-pastes
+const SVGRegex = /^<\?xml version="1.0" encoding="UTF-8"\?>\s*/;
+const MDRegex = /^<!--gv-markdown-->\n*/; // Using HTML comment syntax means it won't appear in the Obsidian preview mode or if converted to HTML another way
 
-//Wait for an embed modal to appear in the dom
-waitFor('.w-codemirror', getEmbedInput, 1000);
+// Wait for an embed modal to appear in the dom
+waitFor('.bem-EmbedEditor_Modal', injectEmbedUI, 100);
 
-//Start paste process when user focuses the embed modal
-function getEmbedInput(embedInput) {
-    embedInput.addEventListener('click', pasteSVG);
-    embedInput.addEventListener('copy', pasteSVG);
-    embedInput.addEventListener('focus', pasteSVG);
-    waitFor('.w-codemirror', getEmbedInput, 1000);
-}
+// Starts clipboard modification when embed is opened, with the option to disable SVG conversion
+function injectEmbedUI(HTMLEmbed) {
+    // Inserts a checkbox to disable SVG compression
+    if (!g('svg-checkbox')) {
+        // Get the parent element of the checkboxes
+        const checkboxDiv = HTMLEmbed.querySelector(
+            ' .bem-Modal_Body > form > div:nth-child(3) > div:first-child'
+        );
 
-// Using regex to remove parts of the text
-async function minifySVG(text) {
-    let minifiedText = text
-        .replace(svgRegex, '') // Gets rid of XML prolog
-        .replace(/(?:<defs>(?:[\s\S]*)<\/defs>\n)/, '') // Gets rid of the entire <defs> tag
-        .replace(/(?:id="(?:.+)"\s)/g, '') // Gets rid of unwanted attributes in the <svg>
-        .replace(/(?:class="(?:.+)"\s)/g, '');
+        // Change a few styles on the existing checkbox wrapper div
+        checkboxDiv.style.display = 'flex';
+        checkboxDiv.style.gap = '2rem';
 
-    return minifiedText;
-}
+        // Inject the checkboxes and the associated markup
+        checkboxDiv.insertAdjacentHTML(
+            'beforeEnd',
+            '<label class="pm-checkbox-label"><input id="svg-checkbox" class="pm-checkbox" type="checkbox"/>Compress SVG</label><label class="pm-checkbox-label"><input id="md-checkbox" class="pm-checkbox" type="checkbox"/>Convert MD</label>'
+        );
 
-async function pasteSVG() {
-    const text = await navigator.clipboard.readText();
-    if (svgRegex.test(text)) {
-        const minifiedText = await minifySVG(text);
-        await navigator.clipboard.writeText(minifiedText);
-    }
-}
+        const SVGcheckbox = g('svg-checkbox');
+        const MDcheckbox = g('md-checkbox');
 
-/**
- * This is almost identical to the code for Evan Frawley's magicpaste extension
- * Allows you to paste markdown straight into the Webflow CMS rich text entry field
- *
- * I changed it to use the reusable waitFor function, and changed the regex key phrase to '@markdown'
- */
-
-const markdownRegex = /^@markdown\s*/;
-const markdownStringNoNewLine = '@markdown';
-
-waitFor('.bem-RichTextInput', getRichTextInput, 1000);
-
-function getRichTextInput(richTextInput) {
-    const infoContainerContainer =
-        richTextInput.parentElement.querySelector('div.bem-Field_Head');
-    if (!infoContainerContainer) return;
-    const infoContainer = infoContainerContainer.querySelector('div.bem-View');
-    if (!infoContainer) return;
-    infoContainer.classList.add('mp-container');
-    richTextInput.addEventListener('click', pasteMarkdown);
-    richTextInput.addEventListener('copy', pasteMarkdown);
-    richTextInput.addEventListener('focus', pasteMarkdown);
-    const info = document.createElement('div');
-    info.innerHTML =
-        'When pasting Markdown, make sure the contents start with <span class="mp-chip">@markdown</span> on its own line. <a class="mp-link" href="https://greenvision.media/docs/build-process/" target="_blank">Learn More</a>';
-    info.classList.add('mp-info');
-    infoContainer.appendChild(info);
-}
-
-async function formatMarkdownToHTML(text) {
-    const markdownContents = text
-        .replace(/\u00A0\//g, ' ')
-        .replace(markdownRegex, '');
-    const formattedText = markdown(markdownContents);
-
-    return formattedText;
-}
-
-async function HTMLtoClipboard(str) {
-    const newBlob = new Blob([str], { type: TYPE_HTML });
-    const data = [new ClipboardItem({ [TYPE_HTML]: newBlob })];
-    await navigator.clipboard.write(data);
-}
-
-async function pasteMarkdown() {
-    const clipboardItems = await navigator.clipboard.read();
-    for (const clipboardItem of clipboardItems) {
-        for (const type of clipboardItem.types) {
-            const blob = await clipboardItem.getType(type);
-            const text = await blob.text();
-
-            if (type === TYPE_PLAIN && markdownRegex.test(text)) {
-                const htmlString = await formatMarkdownToHTML(text);
-                await HTMLtoClipboard(htmlString);
-            } else if (type === TYPE_HTML) {
-                const parser = new DOMParser();
-                const htmlDoc = parser.parseFromString(text, TYPE_HTML);
-                const body = htmlDoc.querySelector('body');
-
-                if (!body.textContent.startsWith(markdownStringNoNewLine))
-                    return;
-
-                let items = [];
-                if (body.children.length >= 2) {
-                    items = Array.from(body.children);
-                } else if (
-                    body.children.length === 1 &&
-                    body.children[0].tagName.toLowerCase() === 'div' &&
-                    body.children[0].children.length >= 2
-                ) {
-                    items = Array.from(body.children[0].children);
-                } else {
-                    return;
-                }
-
-                items = items
-                    .filter((item) => item.tagName.toLowerCase() !== 'meta')
-                    .slice(1); // get rid of the markdown
-
-                const formattedHTMLStrings = [];
-                for (let i = 0; i < items.length; i++) {
-                    const item = items[i];
-                    let str;
-                    const name = item.tagName.toLowerCase();
-                    if (name === 'p' || name === 'div') {
-                        str = await formatMarkdownToHTML(item.textContent);
-                    } else {
-                        str = item.outerHTML;
-                    }
-                    formattedHTMLStrings.push(str);
-                }
-
-                if (formattedHTMLStrings.length === 0) return;
-
-                await HTMLtoClipboard(formattedHTMLStrings.join('\n'));
+        // Toggles a checkmark, and stores a local variable so these settings are persistant
+        SVGcheckbox.addEventListener('click', () => {
+            if (SVGcheckbox.checked) {
+                chrome.storage.local.set({
+                    SVG_STATE: true,
+                });
+            } else {
+                chrome.storage.local.set({
+                    SVG_STATE: false,
+                });
             }
-        }
+        });
+
+        MDcheckbox.addEventListener('click', () => {
+            if (MDcheckbox.checked) {
+                chrome.storage.local.set({
+                    MD_STATE: true,
+                });
+            } else {
+                chrome.storage.local.set({
+                    MD_STATE: false,
+                });
+            }
+        });
+
+        // Load the correct state of the checkmark based on local config data
+        chrome.storage.local.get(['SVG_STATE', 'MD_STATE'], (configData) => {
+            if (configData.SVG_STATE) {
+                SVGcheckbox.checked = true;
+            }
+            if (configData.MD_STATE) {
+                MDcheckbox.checked = true;
+            }
+        });
+
+        // Initiate the clibpoard modifications on embed load, on clicking into the embed,
+        // and on refocusing the window (helpful if the user clicks away to Illustrator then clicks back in)
+        modifyClipboard();
+        HTMLEmbed.addEventListener('click', modifyClipboard);
+        window.addEventListener('focus', modifyClipboard);
     }
+
+    // Start wait loop again
+    waitFor('.bem-EmbedEditor_Modal', injectEmbedUI, 100);
+}
+
+async function modifyClipboard() {
+    const text = await navigator.clipboard.readText();
+    if (SVGRegex.test(text)) {
+        // Checking config data to see if SVG compression is on
+        await chrome.storage.local.get('SVG_STATE', async (configData) => {
+            if (configData.SVG_STATE) {
+                // If so, compress and load that text to the clipboard
+                const convertedDoc = await textToXML(text);
+                const compressedDoc = await compressSVG(convertedDoc);
+                const convertedText = await XMLtoText(compressedDoc);
+                navigator.clipboard.writeText(convertedText);
+            }
+        });
+    }
+    if (MDRegex.test(text)) {
+        // Likewise
+        await chrome.storage.local.get('MD_STATE', async (configData) => {
+            if (configData.MD_STATE) {
+                const convertedText = await markdown(text.replace(MDRegex, ''));
+                navigator.clipboard.writeText(convertedText);
+            }
+        });
+    }
+}
+
+// This is a severe minification, removes everything but the essential path data including colors, kerning, strokes and stroke effects
+// Best for small icons or simple shapes (which are the best use-cases for inline SVG in Webflow)
+
+async function compressSVG(doc) {
+    // Compressing using DOM modification methods
+    doc.querySelector('defs').remove();
+    ['data-name', 'width', 'height'].forEach((a) => {
+        doc.querySelector('svg').removeAttribute(a);
+    });
+    ['svg', 'path', 'g', 'rect', 'polygon', 'line', 'circle'].forEach((t) => {
+        doc.querySelectorAll(t).forEach((e) => {
+            e.removeAttribute('id');
+            e.removeAttribute('class');
+        });
+    });
+    return doc;
+}
+
+async function XMLtoText(doc) {
+    const serializer = new XMLSerializer();
+
+    let text = serializer.serializeToString(doc);
+    return text.replace(/\n\s\s/,''); // Gets rid of ugly line break where <defs> was
+}
+
+async function textToXML(text) {
+    const parser = new DOMParser();
+
+    let doc = parser.parseFromString(
+        text.replace(SVGRegex, ''), // Gets rid of <?xml/> prolog
+        'image/svg+xml'
+    );
+    return doc;
 }
