@@ -12,16 +12,12 @@
     "content_scripts": [
         {
             "matches": ["https://webflow.com/design/*"],
-<<<<<<< HEAD:public/manifest.json
             "js": [
                 "bcrypt.min.js",
                 "drawdown.min.js",
                 "co2.min.js",
                 "pusherman.min.js"
             ],
-=======
-            "js": ["pusherman.min.js", "bcrypt.min.js", "drawdown.min.js", "co2.min.js"],
->>>>>>> 837d588511e2cc7704946b5e5fdfcea18d0ce732:.extension/public/manifest.json
             "css": ["stylesheet.min.css"]
         }
     ],
