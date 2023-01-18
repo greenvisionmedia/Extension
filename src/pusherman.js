@@ -275,7 +275,7 @@ function resetModal(UI) {
         ['PROJECT', 'DOMAIN', 'SITE_CODE', 'STAGING', 'SCRIPTS', 'LOGIN_STATE'],
         (configData) => {
             UI.inputs.domain.value = configData.DOMAIN;
-            UI.inputs.siteCode.value = configData.SITECODE;
+            UI.inputs.siteCode.value = configData.SITE_CODE;
             UI.inputs.scripts.value = configData.SCRIPTS.join(', ');
 
             if (configData.STAGING) {
@@ -338,7 +338,7 @@ function configureModal(UI) {
                         `https:// ${configData.SITE_CODE}.greenvisionmedia.net`
                     );
                     UI.site.querySelector('span').innerHTML =
-                        configData.SITECODE + '.greenvisionmedia.net';
+                        configData.SITE_CODE + '.greenvisionmedia.net';
                 } else {
                     UI.inputs.staging.classList.remove('on');
                     UI.inputs.release.classList.add('on');

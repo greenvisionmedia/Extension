@@ -40,8 +40,12 @@ function scripts() {
         .pipe(gulp.dest('./public'));
 }
 
+function static() {
+    return gulp.src('./static/*').pipe(gulp.dest('./public'))
+}
+
 function clean() {
     return gulp.src('./public/*.html').pipe(vinylPaths(del));
 }
 
-gulp.task('default', gulp.series(markup, styles, scripts, clean));
+gulp.task('default', gulp.series(markup, styles, scripts, static, clean));
