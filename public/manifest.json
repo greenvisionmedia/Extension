@@ -1,0 +1,33 @@
+{
+    "manifest_version": 3,
+    "name": "Pusherman",
+    "description": "Aint I clean bad machine super cool super mean",
+    "version": "0.1",
+    "icons": {
+        "16": "/icons/icon16.png",
+        "32": "/icons/icon32.png",
+        "48": "/icons/icon48.png",
+        "128": "/icons/icon128.png"
+    },
+    "content_scripts": [
+        {
+            "matches": ["https://webflow.com/design/*"],
+<<<<<<< HEAD:public/manifest.json
+            "js": [
+                "bcrypt.min.js",
+                "drawdown.min.js",
+                "co2.min.js",
+                "pusherman.min.js"
+            ],
+=======
+            "js": ["pusherman.min.js", "bcrypt.min.js", "drawdown.min.js", "co2.min.js"],
+>>>>>>> 837d588511e2cc7704946b5e5fdfcea18d0ce732:.extension/public/manifest.json
+            "css": ["stylesheet.min.css"]
+        }
+    ],
+    "background": {
+        "service_worker": "background.min.js"
+    },
+    "permissions": ["storage", "scripting", "downloads"],
+    "host_permissions": ["https://webflow.com/design/*"]
+}
