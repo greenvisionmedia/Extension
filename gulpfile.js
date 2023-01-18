@@ -41,7 +41,7 @@ function scripts() {
 }
 
 function static() {
-    return gulp.src('./static/*').pipe(gulp.dest('./public'))
+    return gulp.src('./static/**').pipe(gulp.dest('./public'))
 }
 
 function clean() {
