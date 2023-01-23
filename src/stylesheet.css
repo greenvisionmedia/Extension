@@ -24,11 +24,14 @@
 
 .interact-state {
     pointer-events: none !important;
+    background-color: #476451 !important;
     color: var(--gray-200) !important;
 }
 
 .interact-state.on {
     pointer-events: all !important;
+    background-color: var(--green-400) !important;
+    color: white !important;
 }
 
 .pressed-state {
@@ -295,6 +298,12 @@
     margin-top: 0.75rem;
 }
 
+#subtitle {
+    position: absolute;
+    margin-top: -24px;
+    background: var(--gray-600);
+}
+
 #site-code {
     width: 6rem;
     margin-left: 8px;
@@ -320,17 +329,16 @@
 }
 
 #publish {
-    background-color: var(--green-400);
     width: 100%;
     margin-left: 0.5rem;
 }
 
 #publish:hover {
-    background-color: var(--green-350);
+    background-color: var(--green-350) !important;
 }
 
 #publish:active {
-    background-color: var(--green-400);
+    background-color: var(--green-400) !important;
 }
 
 #save,

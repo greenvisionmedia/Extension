@@ -17,6 +17,10 @@
 // Query shorthand
 const g = (i) => document.getElementById(i);
 
+// CSS shorthand
+//function on() => this.classList.add('on');
+//function off() => this.classList.remove('on');
+
 // Wait for DOM elements to appear, avoids querying bits of the Webflow designer that haven't loaded yet
 function waitFor(waitClass, callback, interval) {
     const wait = setInterval(() => {
@@ -80,6 +84,7 @@ function injectModal(exportButton) {
         password: g('password'),
         cancel: g('cancel'),
         publish: g('publish'),
+        subtitle: g('subtitle'),
         settings: g('settings'),
         form: g('form'),
         save: g('save'),
@@ -236,6 +241,7 @@ function injectModal(exportButton) {
         UI.dropArea.classList.remove('on');
         UI.dropText.innerHTML = 'Publishing your files...';
 
+        // Sends data stored in drag-and-drop API
         sendData(e.dataTransfer);
     });
 
@@ -247,6 +253,7 @@ function injectModal(exportButton) {
         UI.uploadLabel.classList.remove('on');
         UI.dropText.innerHTML = 'Publishing your files...';
 
+        // Sends the .zip data
         sendData(this.files);
     });
 
@@ -323,6 +330,10 @@ function configureModal(UI) {
         ],
         (configData) => {
             if (configData.CONFIG_STATE) {
+                // Allow publish button to be clicked
+                UI.subtitle.classList.remove('on');
+                UI.publish.classList.add('on');
+                // Enter the existing config data
                 UI.inputs.domain.value = configData.DOMAIN;
                 UI.inputs.siteCode.value = configData.SITE_CODE;
                 UI.inputs.scripts.value = configData.SCRIPTS.join(', ');
@@ -431,7 +442,7 @@ function sendLogin(UI) {
 
 // Send .zip and config data to server
 function sendData(file) {
-    const url = '';
+    const url = 'https://pusher.free.beeceptor.com';
     let formData = new FormData();
 
     chrome.storage.local.get(

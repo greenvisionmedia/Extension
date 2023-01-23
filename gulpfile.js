@@ -4,7 +4,6 @@ var gulp = require('gulp'),
     terser = require('gulp-terser'),
     replace = require('gulp-replace'),
     rename = require('gulp-rename'),
-    filter = require('gulp-filter'),
     htmlmin = require('gulp-htmlmin'),
     cssnano = require('gulp-cssnano'),
     vinylPaths = require('vinyl-paths'),
@@ -31,17 +30,23 @@ function scripts() {
     return gulp
         .src('./src/*.js')
         .pipe(
+            terser({
+                format: {
+                    quote_style: 1,
+                },
+            })
+        )
+        .pipe(
             replace('{{modal.html}}', () => {
                 return `${fs.readFileSync('./public/modal.min.html', 'utf8')}`;
             })
         )
-        .pipe(terser())
         .pipe(rename({ suffix: '.min' }))
         .pipe(gulp.dest('./public'));
 }
 
 function static() {
-    return gulp.src('./static/**').pipe(gulp.dest('./public'))
+    return gulp.src('./static/**').pipe(gulp.dest('./public'));
 }
 
 function clean() {
