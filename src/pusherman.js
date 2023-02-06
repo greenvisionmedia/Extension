@@ -17,10 +17,6 @@
 // Query shorthand
 const g = (i) => document.getElementById(i);
 
-// CSS shorthand
-//function on() => this.classList.add('on');
-//function off() => this.classList.remove('on');
-
 // Wait for DOM elements to appear, avoids querying bits of the Webflow designer that haven't loaded yet
 function waitFor(waitClass, callback, interval) {
     const wait = setInterval(() => {
