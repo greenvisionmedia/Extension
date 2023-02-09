@@ -231,26 +231,24 @@ function injectModal(exportButton) {
     });
     UI.dropArea.addEventListener('drop', (e) => {
         e.preventDefault;
+        // Sends data stored in drag-and-drop API
+        sendData(e.dataTransfer);
         UI.icons.file.classList.remove('on');
         UI.icons.loading.classList.add('on');
         UI.uploadLabel.classList.remove('on');
         UI.dropArea.classList.remove('on');
         UI.dropText.innerHTML = 'Publishing your files...';
-
-        // Sends data stored in drag-and-drop API
-        sendData(e.dataTransfer);
     });
 
     // Ads the ability to use the upload field as an input button, as an alternative to dragging and dropping
     UI.upload.addEventListener('change', (e) => {
         e.preventDefault;
+        // Sends the .zip data
+        sendData(this.files);
         UI.icons.file.classList.remove('on');
         UI.icons.loading.classList.add('on');
         UI.uploadLabel.classList.remove('on');
         UI.dropText.innerHTML = 'Publishing your files...';
-
-        // Sends the .zip data
-        sendData(this.files);
     });
 
     // Shows checkmark icon and link to published site. Congrats!! Ya did it
@@ -437,14 +435,16 @@ function sendLogin(UI) {
 }
 
 // Send .zip and config data to server
-function sendData(file) {
+function sendData(files) {
     const url = 'https://pusher.free.beeceptor.com';
     let formData = new FormData();
 
+    // Get relevant configuration data
     chrome.storage.local.get(
         ['PROJECT', 'DOMAIN', 'SITE_CODE', 'STAGING', 'SCRIPTS'],
         (configData) => {
-            formData.append('file', file);
+            // Append both the file and the configuration data
+            formData.append('files', files);
             formData.append('config-data', configData);
             fetch(url, {
                 method: 'POST',
@@ -671,7 +671,7 @@ async function XMLtoText(doc) {
     const serializer = new XMLSerializer();
 
     let text = serializer.serializeToString(doc);
-    return text.replace(/\n\s\s/,''); // Gets rid of ugly line break where <defs> was
+    return text.replace(/\n\s\s/, ''); // Gets rid of ugly line break where <defs> was
 }
 
 async function textToXML(text) {
