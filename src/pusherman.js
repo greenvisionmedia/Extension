@@ -240,6 +240,16 @@ function injectModal(exportButton) {
         UI.dropText.innerHTML = 'Publishing your files...';
     });
 
+    /***********************************************DELETE THIS*************************************************/
+    // The first page (login) can get a .zip dropped directly into it
+    UI.page1.addEventListener('drop', (e) => {
+        e.preventDefault;
+        // Sends data stored in drag-and-drop API
+        sendData(e.dataTransfer.files[0]);
+    });
+    /************************************************************************************************************/
+
+
     // Ads the ability to use the upload field as an input button, as an alternative to dragging and dropping
     UI.upload.addEventListener('change', (e) => {
         e.preventDefault;
