@@ -232,7 +232,7 @@ function injectModal(exportButton) {
     UI.dropArea.addEventListener('drop', (e) => {
         e.preventDefault;
         // Sends data stored in drag-and-drop API
-        sendData(e.dataTransfer);
+        sendData(e.dataTransfer.files[0]);
         UI.icons.file.classList.remove('on');
         UI.icons.loading.classList.add('on');
         UI.uploadLabel.classList.remove('on');
@@ -244,7 +244,7 @@ function injectModal(exportButton) {
     UI.upload.addEventListener('change', (e) => {
         e.preventDefault;
         // Sends the .zip data
-        sendData(this.files);
+        sendData(this.files[0]);
         UI.icons.file.classList.remove('on');
         UI.icons.loading.classList.add('on');
         UI.uploadLabel.classList.remove('on');
@@ -435,8 +435,8 @@ function sendLogin(UI) {
 }
 
 // Send .zip and config data to server
-function sendData(files) {
-    const url = 'https://pusher.free.beeceptor.com';
+function sendData(file) {
+    const url = 'http://45.79.74.53:5555/api/v1/publish';
     let formData = new FormData();
 
     // Get relevant configuration data
@@ -444,7 +444,7 @@ function sendData(files) {
         ['PROJECT', 'DOMAIN', 'SITE_CODE', 'STAGING', 'SCRIPTS'],
         (configData) => {
             // Append both the file and the configuration data
-            formData.append('files', files);
+            formData.append('file', file);
             formData.append('config-data', configData);
             fetch(url, {
                 method: 'POST',
