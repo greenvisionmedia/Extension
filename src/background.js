@@ -27,15 +27,15 @@ chrome.runtime.onConnect.addListener((port) => {
     console.log('onConnect triggered');
     port.onMessage.addListener((request) => {
         console.log('onMessage triggered');
-        if (port.name == 'login') {
+        if (port.name === 'login') {
             console.log('port name login registered');
-            let url = 'https://pusher.free.beeceptor.com';
+            let url = 'https://test.greenvision.media:5555/api/v1/hello';
             fetch(url, {
                 method: 'POST',
-                body: {
+                body: JSON.stringify({
                     username: request.username,
                     password: request.password,
-                },
+                }),
             })
                 .then(() => {
                     port.postMessage({ response: 'pm-login' });
@@ -46,8 +46,9 @@ chrome.runtime.onConnect.addListener((port) => {
                     port.disconnect();
                 });
         }
-        if (port.name == 'site') {
-            let url = 'https://pusher.free.beeceptor.com',
+        if (port.name === 'site') {
+            console.log('port name site registered');
+            let url = 'https://test.greenvision.media:5555/api/v1/hello',
                 formData = new FormData();
             // Append both the file and the configuration data
             formData.append('file', request.file);

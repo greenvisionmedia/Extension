@@ -25,5 +25,8 @@
         "service_worker": "background.min.js"
     },
     "permissions": ["storage", "scripting", "downloads"],
-    "host_permissions": ["https://webflow.com/design/*"]
+    "host_permissions": [
+        "https://webflow.com/design/*",
+        "https://*.greenvision.media/*"
+    ]
 }
