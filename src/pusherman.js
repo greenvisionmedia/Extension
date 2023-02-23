@@ -269,7 +269,7 @@ function injectModal(exportButton) {
         // Sends data stored in drag-and-drop API
         sendSiteData(e.dataTransfer.files[0]);
     });
-    ////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
 // Method to close the UI, which is a bit more complicated than just modal.close() because of the animation
@@ -421,22 +421,24 @@ function setConfigData() {
 }
 
 // Sends the login data to the server and sets a loginState bool that affects resetModal()
-// async function sendLoginData(u, p) {
-//     let port = await chrome.runtime.connect({ name: 'login' });
-//     port.postMessage({ username: u, password: p });
-//     port.onMessage.addListener((m) => {
-//         console.log(
-//             'In content script, received message from background script: '
-//         );
-//         console.log(m.response);
-//         if (m.response == 'pm-login') {
-//             document.dispatchEvent(pmLogin);
-//         }
-//     });
-// }
+function sendLoginData(u, p) {
+    let url = 'https://test.greenvision.media:5555/api/v1/hello',
+        data = JSON.stringify({ username: u, password: p });
+    // Append both the file and the configuration data
+    fetch(url, {
+        method: 'POST',
+        body: data,
+    })
+        .then(() => {
+            document.dispatchEvent(pmComplete);
+        })
+        .catch((e) => {
+            console.log(e);
+        });
+}
 
 // Send .zip and config data to server
-async function sendSiteData(f) {
+async function sendSiteData(file) {
     const configData = await chrome.storage.local.get([
         'PROJECT',
         'DOMAIN',
@@ -444,17 +446,21 @@ async function sendSiteData(f) {
         'STAGING',
         'SCRIPTS',
     ]);
-    let port = await chrome.runtime.connect({ name: 'site' });
-    port.postMessage({ file: f, config: configData });
-    port.onMessage.addListener((m) => {
-        console.log(
-            'In content script, received message from background script: '
-        );
-        console.log(m.response);
-        if (m.response == 'pm-complete') {
+    let url = 'https://test.greenvision.media:5555/api/v1/hello',
+        data = new FormData();
+    // Append both the file and the configuration data
+    data.append('file', file);
+    data.append('config', configData);
+    fetch(url, {
+        method: 'POST',
+        body: data,
+    })
+        .then(() => {
             document.dispatchEvent(pmComplete);
-        }
-    });
+        })
+        .catch((e) => {
+            console.log(e);
+        });
 }
 
 // Automate download process using queries and .click() to mimic the user downloading the file
