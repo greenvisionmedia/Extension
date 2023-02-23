@@ -1,17 +1,7 @@
-// GREENVISION EXTENSION
-
 /**
- * A chrome extension that adds functionality to the Webflow designer,
- * built and maintained by the Greenvision team.
+ * GV EXTENSION | Content script
  *
- * Aims to streamlines the process of creating no-code websites
- * according to sustainable web design (SWD) principles.
- *
- * Makes it easier and more viable to host Webflow sites on green servers,
- * to use lightweight SVG graphics and markup on Webflow sites,
- * and to monitor the carbon footprint of the website you're designing.
- *
- * Read more: https://greenvision.media/docs/extension
+ * Injects code for the publish modal, the carbon calculator, and the SVG compressor.
  */
 
 // Query shorthand
@@ -28,9 +18,7 @@ function waitFor(waitClass, callback, interval) {
     }, interval);
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// PUBLISH MODAL (PUSHERMAN)
+// PUBLISH MODAL /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
  * This speeds up the process of exporting code from Webflow and uploading it to the server.
@@ -40,7 +28,7 @@ function waitFor(waitClass, callback, interval) {
  * straight back into an upload modal, all without ever leaving Webflow.
  *
  * Our backend service takes care of the rest, passing it straight to either the final release domain
- * or a staging domain, and making other changes according to the settings which are recorded by the UI
+ * or a staging domain, and making other changes according to the settings which are recorded by the pm
  * in this modal.
  */
 
@@ -62,14 +50,14 @@ function injectModal(exportButton) {
     );
 
     // Inject the HTML for the modal
-    modal = document.createElement('dialog');
+    let modal = document.createElement('dialog');
     modal.id = 'modal';
     modal.innerHTML = '{{modal.html}}'; // This string gets replaced during gulp build by ./modal.html
-    modal.closeModal = closeModal; // Custom modal close method, see below
     document.body.appendChild(modal);
 
-    // Loading the interactive parts of the UI as an object that can get passed into various other functions
-    const UI = {
+    // Setup a publish modal object with all UI elements and methods for closing, configuring data and reseting
+    const pm = {
+        modal: modal,
         modalButton: g('modal-button'),
         exit: g('exit'),
         page1: g('page-1'),
@@ -103,371 +91,358 @@ function injectModal(exportButton) {
             loading: g('loading'),
             complete: g('complete'),
         },
+        close: closeModal,
+        reset: resetModal,
+        configure: configureModal,
+        setConfig: setConfigData,
     };
 
-    resetModal(UI); // Resets various UI state changes using stored chrome variables
-    configureModal(UI); // Sets the advanced options menu to the configured state
+    pm.reset(); // Resets various pm state changes using stored chrome variables
+    pm.configure(); // Sets the advanced options menu to the configured state
 
     // Toggle modal
-    UI.modalButton.addEventListener('click', (e) => {
+    pm.modalButton.addEventListener('click', (e) => {
         e.preventDefault;
         modal.showModal();
     });
 
     // Close the modal
-    UI.exit.addEventListener('click', (e) => {
+    pm.exit.addEventListener('click', (e) => {
         e.preventDefault;
-        modal.closeModal();
-        resetModal(UI);
+        pm.close();
+        pm.reset();
     });
 
-    UI.cancel.addEventListener('click', (e) => {
+    pm.cancel.addEventListener('click', (e) => {
         e.preventDefault;
-        modal.closeModal();
-        resetModal(UI);
+        pm.close();
+        pm.reset();
     });
 
     document.addEventListener('keyup', (e) => {
         e.preventDefault;
         if (e.key === 'Escape') {
-            modal.closeModal();
-            resetModal(UI);
+            pm.close();
+            pm.reset();
         }
     });
 
     // Handle login
-    UI.login.addEventListener('click', (e) => {
+    pm.login.addEventListener('click', (e) => {
         e.preventDefault;
-        sendLogin(UI);
+        sendLoginData(pm.username.value, pm.password.value);
+    });
+
+    document.addEventListener('keyup', (e) => {
+        e.preventDefault;
+        if (e.key === 'Enter' && pm.page1.classList.contains('on')) {
+            e.preventDefault;
+            sendLoginData(pm.username.value, pm.password.value);
+        }
     });
 
     document.addEventListener('pm-login', (e) => {
-        UI.page1.classList.remove('on');
-        UI.page2.classList.add('on');
+        pm.page1.classList.remove('on');
+        pm.page2.classList.add('on');
     });
 
     // Toggle advanced options
-    UI.settings.addEventListener('click', (e) => {
+    pm.settings.addEventListener('click', (e) => {
         e.preventDefault;
-        UI.settings.classList.toggle('on');
-        UI.form.classList.toggle('on');
+        pm.settings.classList.toggle('on');
+        pm.form.classList.toggle('on');
     });
 
     // These two buttons basically make up a 'radio button', only one should be on. I'll use which element has the "on" class to determine which is pressed.
-    UI.inputs.staging.addEventListener('click', (e) => {
+    pm.inputs.staging.addEventListener('click', (e) => {
         e.preventDefault;
-        UI.inputs.release.classList.remove('on');
-        UI.inputs.staging.classList.add('on');
+        pm.inputs.release.classList.remove('on');
+        pm.inputs.staging.classList.add('on');
     });
 
-    UI.inputs.release.addEventListener('click', (e) => {
+    pm.inputs.release.addEventListener('click', (e) => {
         e.preventDefault;
-        UI.inputs.release.classList.add('on');
-        UI.inputs.staging.classList.remove('on');
+        pm.inputs.release.classList.add('on');
+        pm.inputs.staging.classList.remove('on');
     });
 
     // Hitting save turns pointerevents off on the form inputs, shows a new 'restart' button where save was
-    UI.save.addEventListener('click', (e) => {
+    pm.save.addEventListener('click', (e) => {
         e.preventDefault;
-        Object.values(UI.inputs).forEach((e) => {
+        Object.values(pm.inputs).forEach((e) => {
             e.disabled = true;
         });
-        UI.save.classList.remove('on');
-        UI.restart.classList.add('on');
+        pm.save.classList.remove('on');
+        pm.restart.classList.add('on');
 
-        setConfigData(UI); //Updates configuration data in chrome storage/GUI
+        pm.setConfig(); //Updates configuration data in chrome storage/GUI
     });
 
     // Hitting restart undoes the previous changes and allows access to the form again
-    UI.restart.addEventListener('click', (e) => {
+    pm.restart.addEventListener('click', (e) => {
         e.preventDefault;
-        Object.values(UI.inputs).forEach((e) => {
+        Object.values(pm.inputs).forEach((e) => {
             e.disabled = false;
         });
-        UI.save.classList.add('on');
-        UI.restart.classList.remove('on');
+        pm.save.classList.add('on');
+        pm.restart.classList.remove('on');
 
-        g('script-row').remove(); // Removes the fancy script UI
+        g('script-row').remove(); // Removes the fancy script pm
     });
 
     // By default the restart button shows 'Configured'; hovering over the restart button shows the text 'Restart'
-    UI.restart.addEventListener('mouseenter', (e) => {
+    pm.restart.addEventListener('mouseenter', (e) => {
         e.preventDefault;
-        UI.restart.innerHTML = 'Restart';
+        pm.restart.innerHTML = 'Restart';
     });
-    UI.restart.addEventListener('mouseleave', (e) => {
+    pm.restart.addEventListener('mouseleave', (e) => {
         e.preventDefault;
-        UI.restart.innerHTML = 'Configured';
+        pm.restart.innerHTML = 'Configured';
     });
 
     // Hitting publish shows the drag and drop page with the loading wheel, and begins automating the download
-    UI.publish.addEventListener('click', (e) => {
-        UI.page2.classList.remove('on');
-        UI.page3.classList.add('on');
+    pm.publish.addEventListener('click', (e) => {
+        pm.page2.classList.remove('on');
+        pm.page3.classList.add('on');
 
         automateDownload(exportButton);
     });
 
     // Alerts user that their file was downloaded and replaces the loading wheel with a file upload icon
     document.addEventListener('pm-downloaded', () => {
-        UI.icons.loading.classList.remove('on');
-        UI.icons.file.classList.add('on');
-        UI.uploadLabel.classList.add('on');
-        UI.dropText.innerHTML = 'Drag your folder here, or click to upload';
+        pm.icons.loading.classList.remove('on');
+        pm.icons.file.classList.add('on');
+        pm.uploadLabel.classList.add('on');
+        pm.dropText.innerHTML = 'Drag your folder here, or click to upload';
     });
 
     // Dragging files over the drop area changes styles to alert the user; dropping the file sends a fetch request to the backend
-    UI.dropArea.addEventListener('dragenter', (e) => {
+    pm.dropArea.addEventListener('dragenter', (e) => {
         e.preventDefault;
-        UI.dropArea.classList.add('on');
+        pm.dropArea.classList.add('on');
     });
-    UI.dropArea.addEventListener('dragover', (e) => {
+    pm.dropArea.addEventListener('dragover', (e) => {
         e.preventDefault;
-        UI.dropArea.classList.add('on');
+        pm.dropArea.classList.add('on');
     });
-    UI.dropArea.addEventListener('dragleave', (e) => {
+    pm.dropArea.addEventListener('dragleave', (e) => {
         e.preventDefault;
-        UI.dropArea.classList.remove('on');
+        pm.dropArea.classList.remove('on');
     });
-    UI.dropArea.addEventListener('drop', (e) => {
-        e.preventDefault;
-        // Sends data stored in drag-and-drop API
-        sendData(e.dataTransfer.files[0]);
-        UI.icons.file.classList.remove('on');
-        UI.icons.loading.classList.add('on');
-        UI.uploadLabel.classList.remove('on');
-        UI.dropArea.classList.remove('on');
-        UI.dropText.innerHTML = 'Publishing your files...';
-    });
-
-    /***********************************************DELETE THIS*************************************************/
-    // The first page (login) can get a .zip dropped directly into it
-    UI.page1.addEventListener('drop', (e) => {
+    pm.dropArea.addEventListener('drop', (e) => {
         e.preventDefault;
         // Sends data stored in drag-and-drop API
-        sendData(e.dataTransfer.files[0]);
+        sendSiteData(e.dataTransfer.files[0]);
+        pm.icons.file.classList.remove('on');
+        pm.icons.loading.classList.add('on');
+        pm.uploadLabel.classList.remove('on');
+        pm.dropArea.classList.remove('on');
+        pm.dropText.innerHTML = 'Publishing your files...';
     });
-    /************************************************************************************************************/
-
 
     // Ads the ability to use the upload field as an input button, as an alternative to dragging and dropping
-    UI.upload.addEventListener('change', (e) => {
+    pm.upload.addEventListener('change', (e) => {
         e.preventDefault;
         // Sends the .zip data
-        sendData(this.files[0]);
-        UI.icons.file.classList.remove('on');
-        UI.icons.loading.classList.add('on');
-        UI.uploadLabel.classList.remove('on');
-        UI.dropText.innerHTML = 'Publishing your files...';
+        sendSiteData(this.files[0]);
+        pm.icons.file.classList.remove('on');
+        pm.icons.loading.classList.add('on');
+        pm.uploadLabel.classList.remove('on');
+        pm.dropText.innerHTML = 'Publishing your files...';
     });
 
     // Shows checkmark icon and link to published site. Congrats!! Ya did it
     document.addEventListener('pm-complete', () => {
-        UI.icons.loading.classList.remove('on');
-        UI.icons.complete.classList.add('on');
-        UI.dropText.classList.remove('on');
-        UI.link.classList.add('on');
+        pm.icons.loading.classList.remove('on');
+        pm.icons.complete.classList.add('on');
+        pm.dropText.classList.remove('on');
+        pm.link.classList.add('on');
     });
 }
 
 // Method to close the UI, which is a bit more complicated than just modal.close() because of the animation
 function closeModal() {
-    this.classList.add('close');
+    this.modal.classList.add('close');
     setTimeout(() => {
-        this.classList.remove('close');
-        this.close();
+        this.modal.classList.remove('close');
+        this.modal.close();
     }, 100);
 }
 
-// Function to reset the UI to the beginning state whenever user closes modal, and whenever Webflow is reloaded
-function resetModal(UI) {
+// Function to reset the pm to the beginning state whenever user closes modal, and whenever Webflow is reloaded
+async function resetModal() {
     // Gets the stored values and inputs them into the modal settings
-    chrome.storage.local.get(
-        ['PROJECT', 'DOMAIN', 'SITE_CODE', 'STAGING', 'SCRIPTS', 'LOGIN_STATE'],
-        (configData) => {
-            UI.inputs.domain.value = configData.DOMAIN;
-            UI.inputs.siteCode.value = configData.SITE_CODE;
-            UI.inputs.scripts.value = configData.SCRIPTS.join(', ');
+    const configData = await chrome.storage.local.get([
+        'PROJECT',
+        'DOMAIN',
+        'SITE_CODE',
+        'STAGING',
+        'SCRIPTS',
+        'LOGIN_STATE',
+    ]);
 
-            if (configData.STAGING) {
-                UI.inputs.staging.classList.add('on');
-                UI.inputs.release.classList.remove('on');
-            } else {
-                UI.inputs.staging.classList.remove('on');
-                UI.inputs.release.classList.add('on');
-            }
-            // Sets the UI back to page 1 if user is not logged in, to page 2 otherwise
-            if (configData.LOGIN_STATE === false) {
-                UI.page1.classList.add('on');
-                UI.page2.classList.remove('on');
-            } else {
-                UI.page2.classList.add('on');
-                UI.page1.classList.remove('on');
-            }
-            UI.page3.classList.remove('on');
-        }
-    );
-    // Resets the icons and undoes other various UI changes
-    UI.icons.file.classList.remove('on');
-    UI.icons.loading.classList.add('on');
-    UI.icons.complete.classList.remove('on');
-    UI.settings.classList.remove('on');
-    UI.form.classList.remove('on');
-    UI.link.classList.remove('on');
-    UI.dropText.classList.add('on');
-    UI.uploadLabel.classList.remove('on');
-    UI.dropText.innerHTML = 'Downloading your files...';
+    this.inputs.domain.value = configData.DOMAIN;
+    this.inputs.siteCode.value = configData.SITE_CODE;
+    this.inputs.scripts.value = configData.SCRIPTS.join(', ');
+
+    if (configData.STAGING) {
+        this.inputs.staging.classList.add('on');
+        this.inputs.release.classList.remove('on');
+    } else {
+        this.inputs.staging.classList.remove('on');
+        this.inputs.release.classList.add('on');
+    }
+
+    // Sets the pm back to page 1 if user is not logged in, to page 2 otherwise
+    if (configData.LOGIN_STATE === false) {
+        this.page1.classList.add('on');
+        this.page2.classList.remove('on');
+    } else {
+        this.page2.classList.add('on');
+        this.page1.classList.remove('on');
+    }
+
+    // Resets the icons and undoes other various pm changes
+    this.page3.classList.remove('on');
+    this.icons.file.classList.remove('on');
+    this.icons.loading.classList.add('on');
+    this.icons.complete.classList.remove('on');
+    this.settings.classList.remove('on');
+    this.form.classList.remove('on');
+    this.link.classList.remove('on');
+    this.dropText.classList.add('on');
+    this.uploadLabel.classList.remove('on');
+    this.dropText.innerHTML = 'Downloading your files...';
 }
 
-// Ensures the advanced options UI is configured based on the current settings
-function configureModal(UI) {
+// Ensures the advanced options pm is configured based on the current settings
+async function configureModal() {
     // This sets the link at the top of the publish modal to be whichever URL your site will be published to, determined by the config settings
     // Also sets the link that appears at the end of the upload process
-    chrome.storage.local.get(
-        [
-            'PROJECT',
-            'DOMAIN',
-            'SITE_CODE',
-            'STAGING',
-            'SCRIPTS',
-            'CONFIG_STATE',
-        ],
-        (configData) => {
-            if (configData.CONFIG_STATE) {
-                // Allow publish button to be clicked
-                UI.subtitle.classList.remove('on');
-                UI.publish.classList.add('on');
-                // Enter the existing config data
-                UI.inputs.domain.value = configData.DOMAIN;
-                UI.inputs.siteCode.value = configData.SITE_CODE;
-                UI.inputs.scripts.value = configData.SCRIPTS.join(', ');
-                if (configData.STAGING) {
-                    UI.inputs.staging.classList.add('on');
-                    UI.inputs.release.classList.remove('on');
-                    UI.link.setAttribute(
-                        'href',
-                        `https:// ${configData.SITE_CODE}.greenvisionmedia.net`
-                    );
-                    UI.site.setAttribute(
-                        'href',
-                        `https:// ${configData.SITE_CODE}.greenvisionmedia.net`
-                    );
-                    UI.site.querySelector('span').innerHTML =
-                        configData.SITE_CODE + '.greenvisionmedia.net';
-                } else {
-                    UI.inputs.staging.classList.remove('on');
-                    UI.inputs.release.classList.add('on');
-                    UI.link.setAttribute(
-                        'href',
-                        `https:// ${configData.DOMAIN}`
-                    );
-                    UI.site.setAttribute(
-                        'href',
-                        `https:// ${configData.DOMAIN}`
-                    );
-                    UI.site.querySelector('span').innerHTML = configData.DOMAIN;
-                }
+    const configData = await chrome.storage.local.get([
+        'PROJECT',
+        'DOMAIN',
+        'SITE_CODE',
+        'STAGING',
+        'SCRIPTS',
+        'CONFIG_STATE',
+        'LOGIN_STATE',
+    ]);
 
-                // This is some code I wrote to give nice styles to the list of scripts, reminiscent of Webflow's class adder UI
-                // Pretty much useless, but makes it more obvious which scripts are going to be added and looks cool
-
-                // Adds a new div that sits on top of the existing script input element
-                const scriptRow = document.createElement('div');
-                scriptRow.id = 'script-row';
-                scriptRow.classList.add('pm-text');
-
-                // Adds the scripts
-                UI.inputs.scripts.insertAdjacentElement('afterend', scriptRow);
-                for (script of configData.SCRIPTS) {
-                    //Wraps each script in a span for a nice green box
-                    let scriptSpan = document.createElement('span');
-                    scriptSpan.innerHTML = script;
-                    scriptRow.appendChild(scriptSpan);
-                }
-                // Disable inputs
-                Object.values(UI.inputs).forEach((e) => {
-                    e.disabled = true;
-                });
-                UI.save.classList.remove('on');
-                UI.restart.classList.add('on');
-            }
+    if (configData.CONFIG_STATE) {
+        // Allow publish button to be clicked
+        this.subtitle.classList.remove('on');
+        this.publish.classList.add('on');
+        // Enter the existing config data
+        this.inputs.domain.value = configData.DOMAIN;
+        this.inputs.siteCode.value = configData.SITE_CODE;
+        this.inputs.scripts.value = configData.SCRIPTS.join(', ');
+        if (configData.STAGING) {
+            this.inputs.staging.classList.add('on');
+            this.inputs.release.classList.remove('on');
+            this.link.setAttribute(
+                'href',
+                `https:// ${configData.SITE_CODE}.greenvisionmedia.net`
+            );
+            this.site.setAttribute(
+                'href',
+                `https:// ${configData.SITE_CODE}.greenvisionmedia.net`
+            );
+            this.site.querySelector('span').innerHTML =
+                configData.SITE_CODE + '.greenvisionmedia.net';
+        } else {
+            this.inputs.staging.classList.remove('on');
+            this.inputs.release.classList.add('on');
+            this.link.setAttribute('href', `https:// ${configData.DOMAIN}`);
+            this.site.setAttribute('href', `https:// ${configData.DOMAIN}`);
+            this.site.querySelector('span').innerHTML = configData.DOMAIN;
         }
-    );
+
+        // This is some code I wrote to give nice styles to the list of scripts, reminiscent of Webflow's class adder pm
+        // Pretty much useless, but makes it more obvious which scripts are going to be added and looks cool
+
+        // Adds a new div that sits on top of the existing script input element
+        const scriptRow = document.createElement('div');
+        scriptRow.id = 'script-row';
+        scriptRow.classList.add('pm-text');
+
+        // Adds the scripts
+        this.inputs.scripts.insertAdjacentElement('afterend', scriptRow);
+        for (script of configData.SCRIPTS) {
+            //Wraps each script in a span for a nice green box
+            let scriptSpan = document.createElement('span');
+            scriptSpan.innerHTML = script;
+            scriptRow.appendChild(scriptSpan);
+        }
+        // Disable inputs
+        Object.values(this.inputs).forEach((e) => {
+            e.disabled = true;
+        });
+        this.save.classList.remove('on');
+        this.restart.classList.add('on');
+    }
 }
 
 // Write and store configuration data
-function setConfigData(UI) {
+function setConfigData() {
     // Reads the class on the fake radio buttons and sets a boolean accordingly
     let stagingBool = true;
-    if (UI.inputs.staging.classList.contains('on')) {
+    if (this.inputs.staging.classList.contains('on')) {
         stagingBool = true;
     } else {
         stagingBool = false;
     }
 
     const projectString = window.location.pathname.split('/')[2]; // Gets WF project name from URL
-    let scriptArray = UI.inputs.scripts.value.split(', '); // Gets an array of script strings from comma + space delimited list
+    let scriptArray = this.inputs.scripts.value.split(', '); // Gets an array of script strings from comma + space delimited list
 
     chrome.storage.local
         .set({
             PROJECT: projectString,
-            DOMAIN: UI.inputs.domain.value,
-            SITE_CODE: UI.inputs.siteCode.value,
+            DOMAIN: this.inputs.domain.value,
+            SITE_CODE: this.inputs.siteCode.value,
             SCRIPTS: scriptArray,
             STAGING: stagingBool,
             CONFIG_STATE: true,
         })
-        .then(configureModal(UI));
+        .then(this.configure());
 }
 
 // Sends the login data to the server and sets a loginState bool that affects resetModal()
-function sendLogin(UI) {
-    const url = '';
-    let loginData = {
-        username: UI.username.value,
-        password: UI.password.value,
-    };
-    if (loginData.username && loginData.password) {
-        fetch(url, {
-            method: 'POST',
-            body: loginData,
-        })
-            .then(() => {
-                chrome.storage.local.set({ LOGIN_STATE: true });
-                document.dispatchEvent(pmLogin);
-            }) // pmLogin should be updated when login succeeds, not just when data gets sent successfully
-            .catch((e) => {
-                console.log(e);
-            });
-    } else {
-        alert('Enter a username and password');
-    }
+async function sendLoginData(u, p) {
+    let port = await chrome.runtime.connect({ name: 'login' });
+    port.postMessage({ username: u, password: p });
+    port.onMessage.addListener((m) => {
+        console.log(
+            'In content script, received message from background script: '
+        );
+        console.log(m.response);
+        if (m.response == 'pm-login') {
+            document.dispatchEvent(pmLogin);
+        }
+    });
 }
 
 // Send .zip and config data to server
-function sendData(file) {
-    const url = 'http://45.79.74.53:5555/api/v1/publish';
-    let formData = new FormData();
-
-    // Get relevant configuration data
-    chrome.storage.local.get(
-        ['PROJECT', 'DOMAIN', 'SITE_CODE', 'STAGING', 'SCRIPTS'],
-        (configData) => {
-            // Append both the file and the configuration data
-            formData.append('file', file);
-            formData.append('config-data', configData);
-            fetch(url, {
-                method: 'POST',
-                body: formData,
-            })
-                .then(() => {
-                    document.dispatchEvent(pmComplete);
-                }) // pmComplete should only actually be fired when the entire PM process finishes, not just when data gets sent successfully
-                .catch((e) => {
-                    console.log(e);
-                });
+async function sendSiteData(f) {
+    const configData = await chrome.storage.local.get([
+        'PROJECT',
+        'DOMAIN',
+        'SITE_CODE',
+        'STAGING',
+        'SCRIPTS',
+    ]);
+    let port = await chrome.runtime.connect({ name: 'site' });
+    port.postMessage({ file: f, config: configData });
+    port.onMessage.addListener((m) => {
+        console.log(
+            'In content script, received message from background script: '
+        );
+        console.log(m.response);
+        if (m.response == 'pm-complete') {
+            document.dispatchEvent(pmComplete);
         }
-    );
+    });
 }
 
 // Automate download process using queries and .click() to mimic the user downloading the file
@@ -498,9 +473,7 @@ function automateDownload(exportButton) {
     );
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// CARBON METER
+// CARBON METER ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
  * This gives an estimate of the CO2 that will be emitted by the finished website.
@@ -525,24 +498,26 @@ function injectMeter(topBar) {
         '<div class="pm-meter"><div><span id="meter">X.Xg </span><span>CO<sub>2</sub></span></div></div>'
     );
 
-    // Get the <span> where the CO2 value will go
-    const meter = g('meter');
+    // Set up a carbon meter object with the meter and a setCarbon method
+    const cm = {
+        meter: g('meter'),
+        setCarbon: setCarbonData,
+    };
 
-    // When using the GV publish modal, update the carbon meter
-    document.addEventListener('pm-downloaded', () => {
-        chrome.storage.local.get('DOWNLOAD_SIZE', (configData) => {
-            // Get carbon from download size
-            let emissions = swd.perByte(configData.DOWNLOAD_SIZE);
-
-            // Update UI
-            meter.innerHTML = emissions.toPrecision(2) + 'g ';
-        });
-    });
+    // When using the GV publish modal, this custom event will fire. Use this to update the carbon meter
+    document.addEventListener('pm-downloaded', cm.setCarbon());
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+async function setCarbonData() {
+    // Get download size from background script
+    const configData = await chrome.storage.local.get('DOWNLOAD_SIZE');
+    let emissions = swd.perByte(configData.DOWNLOAD_SIZE);
 
-// MAGIC CLIPBOARD
+    // Update UI
+    this.meter.innerHTML = emissions.toPrecision(2) + 'g ';
+}
+
+// MAGIC CLIPBOARD /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
  * Designed to modify the clipboard data when pasting into a Webflow embed block. Inspired by this extension: https://github.com/evanfrawley/magicpaste
