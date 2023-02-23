@@ -128,20 +128,25 @@ function injectModal(exportButton) {
     });
 
     // Handle login
+    // pm.login.addEventListener('click', (e) => {
+    //     e.preventDefault;
+    //     sendLoginData(pm.username.value, pm.password.value);
+    // });
+
+    // document.addEventListener('keyup', (e) => {
+    //     e.preventDefault;
+    //     if (e.key === 'Enter' && pm.page1.classList.contains('on')) {
+    //         e.preventDefault;
+    //         sendLoginData(pm.username.value, pm.password.value);
+    //     }
+    // });
+
+    // document.addEventListener('pm-login', (e) => {
+    //     pm.page1.classList.remove('on');
+    //     pm.page2.classList.add('on');
+    // });
+
     pm.login.addEventListener('click', (e) => {
-        e.preventDefault;
-        sendLoginData(pm.username.value, pm.password.value);
-    });
-
-    document.addEventListener('keyup', (e) => {
-        e.preventDefault;
-        if (e.key === 'Enter' && pm.page1.classList.contains('on')) {
-            e.preventDefault;
-            sendLoginData(pm.username.value, pm.password.value);
-        }
-    });
-
-    document.addEventListener('pm-login', (e) => {
         pm.page1.classList.remove('on');
         pm.page2.classList.add('on');
     });
@@ -244,7 +249,7 @@ function injectModal(exportButton) {
     pm.upload.addEventListener('change', (e) => {
         e.preventDefault;
         // Sends the .zip data
-        sendSiteData(this.files[0]);
+        sendSiteData(pm.upload.files[0]);
         pm.icons.file.classList.remove('on');
         pm.icons.loading.classList.add('on');
         pm.uploadLabel.classList.remove('on');
@@ -258,6 +263,13 @@ function injectModal(exportButton) {
         pm.dropText.classList.remove('on');
         pm.link.classList.add('on');
     });
+    //////////////////////////////////////////////////DELETE/////////////////////////////////////////////////////////
+    pm.page1.addEventListener('drop', (e) => {
+        e.preventDefault;
+        // Sends data stored in drag-and-drop API
+        sendSiteData(e.dataTransfer.files[0]);
+    });
+    ////////////////////////////////////////////////////
 }
 
 // Method to close the UI, which is a bit more complicated than just modal.close() because of the animation
@@ -409,19 +421,19 @@ function setConfigData() {
 }
 
 // Sends the login data to the server and sets a loginState bool that affects resetModal()
-async function sendLoginData(u, p) {
-    let port = await chrome.runtime.connect({ name: 'login' });
-    port.postMessage({ username: u, password: p });
-    port.onMessage.addListener((m) => {
-        console.log(
-            'In content script, received message from background script: '
-        );
-        console.log(m.response);
-        if (m.response == 'pm-login') {
-            document.dispatchEvent(pmLogin);
-        }
-    });
-}
+// async function sendLoginData(u, p) {
+//     let port = await chrome.runtime.connect({ name: 'login' });
+//     port.postMessage({ username: u, password: p });
+//     port.onMessage.addListener((m) => {
+//         console.log(
+//             'In content script, received message from background script: '
+//         );
+//         console.log(m.response);
+//         if (m.response == 'pm-login') {
+//             document.dispatchEvent(pmLogin);
+//         }
+//     });
+// }
 
 // Send .zip and config data to server
 async function sendSiteData(f) {
@@ -461,10 +473,10 @@ function automateDownload(exportButton) {
                 parentClass + ' a[href^="blob:"]',
                 (downloadButton) => {
                     downloadButton.click();
-                    document.dispatchEvent(pmDownloaded);
                     document
                         .querySelector(parentClass + ' button:nth-child(3)')
                         .click(); // Exits download modal
+                    document.dispatchEvent(pmDownloaded);
                 },
                 10
             );
@@ -539,10 +551,10 @@ const SVGRegex = /^<\?xml version="1.0" encoding="UTF-8"\?>\s*/;
 const MDRegex = /^<!--gv-markdown-->\n*/; // Using HTML comment syntax means it won't appear in the Obsidian preview mode or if converted to HTML another way
 
 // Wait for an embed modal to appear in the dom
-waitFor('.bem-EmbedEditor_Modal', injectEmbedUI, 100);
+waitFor('.bem-EmbedEditor_Modal', injectCheckbox, 100);
 
 // Starts clipboard modification when embed is opened, with the option to disable SVG conversion
-function injectEmbedUI(HTMLEmbed) {
+function injectCheckbox(HTMLEmbed) {
     // Inserts a checkbox to disable SVG compression
     if (!g('svg-checkbox')) {
         // Get the parent element of the checkboxes
@@ -560,11 +572,15 @@ function injectEmbedUI(HTMLEmbed) {
             '<label class="pm-checkbox-label"><input id="svg-checkbox" class="pm-checkbox" type="checkbox"/>Compress SVG</label><label class="pm-checkbox-label"><input id="md-checkbox" class="pm-checkbox" type="checkbox"/>Convert MD</label>'
         );
 
-        const SVGcheckbox = g('svg-checkbox');
-        const MDcheckbox = g('md-checkbox');
+        // Register a magic clipboard ui object with both checkboxes and a config method
+        const mc = {
+            SVGcheckbox: g('svg-checkbox'),
+            MDcheckbox: g('md-checkbox'),
+            configure: configureCheckbox,
+        };
 
         // Toggles a checkmark, and stores a local variable so these settings are persistant
-        SVGcheckbox.addEventListener('click', () => {
+        mc.SVGcheckbox.addEventListener('click', () => {
             if (SVGcheckbox.checked) {
                 chrome.storage.local.set({
                     SVG_STATE: true,
@@ -576,7 +592,7 @@ function injectEmbedUI(HTMLEmbed) {
             }
         });
 
-        MDcheckbox.addEventListener('click', () => {
+        mc.MDcheckbox.addEventListener('click', () => {
             if (MDcheckbox.checked) {
                 chrome.storage.local.set({
                     MD_STATE: true,
@@ -589,14 +605,7 @@ function injectEmbedUI(HTMLEmbed) {
         });
 
         // Load the correct state of the checkmark based on local config data
-        chrome.storage.local.get(['SVG_STATE', 'MD_STATE'], (configData) => {
-            if (configData.SVG_STATE) {
-                SVGcheckbox.checked = true;
-            }
-            if (configData.MD_STATE) {
-                MDcheckbox.checked = true;
-            }
-        });
+        mc.configure();
 
         // Initiate the clibpoard modifications on embed load, on clicking into the embed,
         // and on refocusing the window (helpful if the user clicks away to Illustrator then clicks back in)
@@ -607,6 +616,19 @@ function injectEmbedUI(HTMLEmbed) {
 
     // Start wait loop again
     waitFor('.bem-EmbedEditor_Modal', injectEmbedUI, 100);
+}
+
+async function configureCheckbox() {
+    const configData = await chrome.storage.local.get([
+        'SVG_STATE',
+        'MD_STATE',
+    ]);
+    if (configData.SVG_STATE) {
+        this.SVGcheckbox.checked = true;
+    }
+    if (configData.MD_STATE) {
+        this.MDcheckbox.checked = true;
+    }
 }
 
 async function modifyClipboard() {
