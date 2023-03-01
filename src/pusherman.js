@@ -422,7 +422,7 @@ function setConfigData() {
 
 // Sends the login data to the server and sets a loginState bool that affects resetModal()
 function sendLoginData(u, p) {
-    let url = 'https://test.greenvision.media:5555/api/v1/hello',
+    let url = 'https://test.greenvision.media:5555/api/v1/login',
         data = JSON.stringify({ username: u, password: p });
     // Append both the file and the configuration data
     fetch(url, {
@@ -448,9 +448,10 @@ async function sendSiteData(file) {
     ]);
     let url = 'https://test.greenvision.media:5555/api/v1/publish',
         data = new FormData();
+    data.innerHTML = '<input type="file" name="keyname"/>';
     // Append both the file and the configuration data
-    data.append('keyname[]', file, file.name);
-    data.append('config', configData);
+    data.append('keyname', file);
+    //data.append('config', configData);
     fetch(url, {
         method: 'POST',
         body: data,
