@@ -446,10 +446,10 @@ async function sendSiteData(file) {
         'STAGING',
         'SCRIPTS',
     ]);
-    let url = 'https://test.greenvision.media:5555/api/v1/hello',
+    let url = 'https://test.greenvision.media:5555/api/v1/publish',
         data = new FormData();
     // Append both the file and the configuration data
-    data.append('file', file);
+    data.append('keyname[]', file, file.name);
     data.append('config', configData);
     fetch(url, {
         method: 'POST',
