@@ -529,8 +529,8 @@ function injectMeter(topBar) {
 
 async function setCarbonData() {
     // Get download size from background script
-    const configData = await chrome.storage.local.get('DOWNLOAD_SIZE');
-    let emissions = swd.perByte(configData.DOWNLOAD_SIZE);
+    const configData = await chrome.storage.local.get('FILE_SIZE');
+    let emissions = swd.perByte(configData.FILE_SIZE);
 
     // Update UI
     this.meter.innerHTML = emissions.toPrecision(2) + 'g ';

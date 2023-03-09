@@ -22,9 +22,10 @@ chrome.runtime.onInstalled.addListener(() => {
 
 // CARBON METER ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// Store download size for use by
+// Store download size for use by carbon meter
 chrome.downloads.onCreated.addListener((item) => {
     chrome.storage.local.set({
-        DOWNLOAD_SIZE: item.fileSize,
+        FILE_SIZE: item.fileSize,
+        FILENAME: item.filename,
     });
 });
