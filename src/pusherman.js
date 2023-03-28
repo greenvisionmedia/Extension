@@ -264,6 +264,7 @@ function injectModal(exportButton) {
         pm.icons.complete.classList.add('on');
         pm.dropText.classList.remove('on');
         pm.link.classList.add('on');
+        deleteDownload();
     });
     //////////////////////////////////////////////////DELETE/////////////////////////////////////////////////////////
     pm.page1.addEventListener('drop', (e) => {
@@ -447,8 +448,8 @@ async function sendSiteData(file) {
         'SITE_CODE',
         'STAGING',
         'SCRIPTS',
-        'FILENAME',
         'FILE_SIZE',
+        'FILE_ID',
     ]);
     console.log(configData);
     let url = 'https://test.greenvision.media:5555/api/v1/publish',
@@ -456,8 +457,6 @@ async function sendSiteData(file) {
     data.innerHTML = '<input type="file" name="keyname"/>';
     // Append both the file and the configuration data
     data.append('keyname', file);
-
-    deleteDownload();
     fetch(url, {
         method: 'POST',
         body: data,
@@ -485,46 +484,16 @@ async function automateDownload(exportButton) {
     // Open a port with the background script, so that we can use the download API
     let downloadPort = chrome.runtime.connect({ name: 'download-port' });
     downloadPort.postMessage({ url: downloadURL });
-    downloadPort.onMessage.addListener((message) => {
-        if (message.response == 'pm-downloaded') {
-            document.dispatchEvent(pmDownloaded);
-        }
-        downloadPort.disconnect();
+    downloadPort.onMessage.addListener(() => {
+        document.dispatchEvent(pmDownloaded);
     });
 }
 
 function deleteDownload() {
     let deletePort = chrome.runtime.connect({ name: 'delete-port' });
     deletePort.postMessage({ delete: true });
-    deletePort.onMessage.addListener(() => {
-        downloadPort.disconnect();
-    });
+    deletePort.disconnect();
 }
-
-//NEW AUTOMATIC DOWNLOAD PSEUDOCODE
-
-//content.js ====
-
-//async function waitFor !!
-//promise constructor thing !!
-
-//async function automateDownload(exportButton {
-//click export button !!
-//wait for zip button !!
-//click export button !!
-//wait for download button !!
-//steal download url !!
-//send message to background
-//await response to message (confirm/error)
-//dispatch download event
-
-//background.js ====
-
-//onmessage > ondownload
-//download file using url variable
-//set config data (filename + file size)
-//send response
-//remove file
 
 // CARBON METER ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
