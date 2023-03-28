@@ -486,6 +486,7 @@ async function automateDownload(exportButton) {
     downloadPort.postMessage({ url: downloadURL });
     downloadPort.onMessage.addListener(() => {
         document.dispatchEvent(pmDownloaded);
+        downloadPort.disconnect();
     });
 }
 
@@ -493,6 +494,9 @@ function deleteDownload() {
     let deletePort = chrome.runtime.connect({ name: 'delete-port' });
     deletePort.postMessage({ delete: true });
     deletePort.disconnect();
+    deletePort.onMessage.addListener(() => {
+        deletePort.disconnect();
+    });
 }
 
 // CARBON METER ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

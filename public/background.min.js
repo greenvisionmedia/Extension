@@ -1,8 +1,7 @@
 /**
  * GV EXTENSION | Background script
  *
- * Sends data from the extension to the pusherman node application.
- * Also sends download data back to the content script to update the carbon meter.
+ * Updates
  */
 
 // PUBLISH MODAL ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -24,11 +23,8 @@ chrome.runtime.onInstalled.addListener(() => {
 chrome.runtime.onConnect.addListener((port) => {
     if (port.name == 'download-port') {
         port.onMessage.addListener((message) => {
-            chrome.downloads.download({ url: message.url }).then((id) => {
+            chrome.downloads.download({ url: message.url }).then(() => {
                 port.postMessage({ response: 'pm-downloaded' });
-                chrome.storage.local.set({
-                    FILE_ID: id,
-                });
             });
         });
     }
@@ -38,7 +34,9 @@ chrome.runtime.onConnect.addListener((port) => {
                 limit: 1,
                 orderBy: ['-startTime'],
             });
-            chrome.downloads.removeFile(downloads[0].id);
+            chrome.downloads.removeFile(downloads[0].id).then(() => {
+                port.postMessage({ response: 'pm-deleted' });
+            });
         });
     }
 });
