@@ -20,6 +20,27 @@ chrome.runtime.onInstalled.addListener(() => {
     });
 });
 
+// Handle downloading the files using chrome's download API, then deleting that download when the content script requests
+chrome.runtime.onConnect.addListener((port) => {
+    let downloading, downloadId;
+    if (port.name == 'download-port') {
+        port.onMessage.addListener((message) => {
+            downloading = chrome.downloads.download({ url: message.url });
+            downloading.then((id) => {
+                port.postMessage({ response: 'pm-downloaded', id: id });
+            });
+        });
+    }
+    if (port.name == 'delete-port') {
+        port.onMessage.addListener(() => {
+            console.log(downloadId);
+            chrome.downloads
+                .removeFile(downloadId)
+                .then(port.postMessage({ response: 'pm-deleted' }));
+        });
+    }
+});
+
 // CARBON METER ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Store download size for use by carbon meter

@@ -8,14 +8,16 @@
 const g = (i) => document.getElementById(i);
 
 // Wait for DOM elements to appear, avoids querying bits of the Webflow designer that haven't loaded yet
-function waitFor(waitClass, callback, interval) {
-    const wait = setInterval(() => {
-        const waitNode = document.querySelector(waitClass);
-        if (waitNode) {
-            clearInterval(wait);
-            callback(waitNode);
-        }
-    }, interval);
+function lookFor(lookClass, interval) {
+    return new Promise((resolve) => {
+        const look = setInterval(() => {
+            const lookNode = document.querySelector(lookClass);
+            if (lookNode) {
+                clearInterval(look);
+                resolve(lookNode);
+            }
+        }, interval);
+    });
 }
 
 // PUBLISH MODAL /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -39,7 +41,7 @@ const pmLogin = new Event('pm-login');
 const pmComplete = new Event('pm-complete');
 
 // Wait for the export button to appear in the DOM
-waitFor('.bem-TopBar_Body_ExportButton', injectModal, 1000);
+lookFor('.bem-TopBar_Body_ExportButton', 1000).then(injectModal);
 
 // Add all the markup for the modal
 function injectModal(exportButton) {
@@ -210,7 +212,7 @@ function injectModal(exportButton) {
         pm.page2.classList.remove('on');
         pm.page3.classList.add('on');
 
-        automateDownload(exportButton);
+        downloadId = automateDownload(exportButton);
     });
 
     // Alerts user that their file was downloaded and replaces the loading wheel with a file upload icon
@@ -445,13 +447,17 @@ async function sendSiteData(file) {
         'SITE_CODE',
         'STAGING',
         'SCRIPTS',
+        'FILENAME',
+        'FILE_SIZE',
     ]);
+    console.log(configData);
     let url = 'https://test.greenvision.media:5555/api/v1/publish',
         data = new FormData();
     data.innerHTML = '<input type="file" name="keyname"/>';
     // Append both the file and the configuration data
     data.append('keyname', file);
-    //data.append('config', configData);
+
+    deleteDownload();
     fetch(url, {
         method: 'POST',
         body: data,
@@ -464,33 +470,61 @@ async function sendSiteData(file) {
         });
 }
 
-// Automate download process using queries and .click() to mimic the user downloading the file
-// Janky, but it works! A more performant way might use mutation observers and promise chains
-function automateDownload(exportButton) {
-    exportButton.click();
+async function automateDownload(exportButton) {
+    // Automates the normal user download process using queries and .click()
     const parentClass =
         'div[style="display: flex; justify-content: space-between; flex: 0 1 auto;"]';
-
-    waitFor(
-        parentClass + ' button:nth-child(4)',
-        (zipButton) => {
-            zipButton.click();
-
-            waitFor(
-                parentClass + ' a[href^="blob:"]',
-                (downloadButton) => {
-                    downloadButton.click();
-                    document
-                        .querySelector(parentClass + ' button:nth-child(3)')
-                        .click(); // Exits download modal
-                    document.dispatchEvent(pmDownloaded);
-                },
-                10
-            );
-        },
-        10
-    );
+    exportButton.click();
+    const zipButton = await lookFor(parentClass + ' button:nth-child(4)', 10);
+    zipButton.click();
+    const downloadButton = await lookFor(parentClass + ' a[href^="blob:"]', 10);
+    // Get the blob URL of the zip file the href attribute of the download button
+    let downloadURL = downloadButton.href;
+    // Exit the download modal
+    document.querySelector(parentClass + ' button:nth-child(3)').click();
+    // Open a port with the background script, so that we can use the download API
+    let downloadPort = chrome.runtime.connect({ name: 'download-port' });
+    downloadPort.postMessage({ url: downloadURL });
+    downloadPort.onMessage.addListener((message) => {
+        if (message.response == 'pm-downloaded') {
+            document.dispatchEvent(pmDownloaded);
+        }
+        downloadPort.disconnect();
+    });
 }
+
+function deleteDownload() {
+    let deletePort = chrome.runtime.connect({ name: 'delete-port' });
+    deletePort.postMessage({ delete: true });
+    deletePort.onMessage.addListener(() => {
+        downloadPort.disconnect();
+    });
+}
+
+//NEW AUTOMATIC DOWNLOAD PSEUDOCODE
+
+//content.js ====
+
+//async function waitFor !!
+//promise constructor thing !!
+
+//async function automateDownload(exportButton {
+//click export button !!
+//wait for zip button !!
+//click export button !!
+//wait for download button !!
+//steal download url !!
+//send message to background
+//await response to message (confirm/error)
+//dispatch download event
+
+//background.js ====
+
+//onmessage > ondownload
+//download file using url variable
+//set config data (filename + file size)
+//send response
+//remove file
 
 // CARBON METER ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -508,7 +542,7 @@ function automateDownload(exportButton) {
 const swd = new co2.co2();
 
 // Wait for the part of the top bar where the preview icon
-waitFor('.bem-TopBar_Body_Group-left', injectMeter, 1000);
+lookFor('.bem-TopBar_Body_Group-left', 1000).then(injectMeter);
 
 function injectMeter(topBar) {
     //Inject HTML for CO2 meter
@@ -554,11 +588,11 @@ async function setCarbonData() {
 
 // Store the string I know will prefix all Illustrator copy-pastes,
 // and inventing a string that will prefix all markdown copy-pastes
-const SVGRegex = /^<\?xml version="1.0" encoding="UTF-8"\?>\s*/;
-const MDRegex = /^<!--gv-markdown-->\n*/; // Using HTML comment syntax means it won't appear in the Obsidian preview mode or if converted to HTML another way
+const SVGPragma = /^<\?xml version="1.0" encoding="UTF-8"\?>\s*/;
+const MDPragma = /^<!--gv-markdown-->\n*/; // Using HTML comment syntax means it won't appear in the Obsidian preview mode or if converted to HTML another way
 
 // Wait for an embed modal to appear in the dom
-waitFor('.bem-EmbedEditor_Modal', injectCheckbox, 100);
+lookFor('.bem-EmbedEditor_Modal', 100).then(injectCheckbox);
 
 // Starts clipboard modification when embed is opened, with the option to disable SVG conversion
 function injectCheckbox(HTMLEmbed) {
@@ -581,14 +615,14 @@ function injectCheckbox(HTMLEmbed) {
 
         // Register a magic clipboard ui object with both checkboxes and a config method
         const mc = {
-            SVGcheckbox: g('svg-checkbox'),
-            MDcheckbox: g('md-checkbox'),
+            SVGCheckbox: g('svg-checkbox'),
+            MDCheckbox: g('md-checkbox'),
             configure: configureCheckbox,
         };
 
         // Toggles a checkmark, and stores a local variable so these settings are persistant
-        mc.SVGcheckbox.addEventListener('click', () => {
-            if (SVGcheckbox.checked) {
+        mc.SVGCheckbox.addEventListener('click', () => {
+            if (mc.SVGCheckbox.checked) {
                 chrome.storage.local.set({
                     SVG_STATE: true,
                 });
@@ -599,8 +633,8 @@ function injectCheckbox(HTMLEmbed) {
             }
         });
 
-        mc.MDcheckbox.addEventListener('click', () => {
-            if (MDcheckbox.checked) {
+        mc.MDCheckbox.addEventListener('click', () => {
+            if (mc.MDCheckbox.checked) {
                 chrome.storage.local.set({
                     MD_STATE: true,
                 });
@@ -616,13 +650,23 @@ function injectCheckbox(HTMLEmbed) {
 
         // Initiate the clibpoard modifications on embed load, on clicking into the embed,
         // and on refocusing the window (helpful if the user clicks away to Illustrator then clicks back in)
+        // and on ctrl keyup (ctrl+a to select everything inside the HTMLEmbed)
         modifyClipboard();
         HTMLEmbed.addEventListener('click', modifyClipboard);
-        window.addEventListener('focus', modifyClipboard);
+        window.addEventListener('focus', () => {
+            if (g('svg-checkbox')) {
+                modifyClipboard;
+            }
+        });
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'Control' && g('svg-checkbox')) {
+                modifyClipboard;
+            }
+        });
     }
 
     // Start wait loop again
-    waitFor('.bem-EmbedEditor_Modal', injectEmbedUI, 100);
+    lookFor('.bem-EmbedEditor_Modal', 100).then(injectCheckbox);
 }
 
 async function configureCheckbox() {
@@ -631,32 +675,34 @@ async function configureCheckbox() {
         'MD_STATE',
     ]);
     if (configData.SVG_STATE) {
-        this.SVGcheckbox.checked = true;
+        this.SVGCheckbox.checked = true;
     }
     if (configData.MD_STATE) {
-        this.MDcheckbox.checked = true;
+        this.MDCheckbox.checked = true;
     }
 }
 
 async function modifyClipboard() {
     const text = await navigator.clipboard.readText();
-    if (SVGRegex.test(text)) {
+    if (SVGPragma.test(text)) {
         // Checking config data to see if SVG compression is on
         await chrome.storage.local.get('SVG_STATE', async (configData) => {
             if (configData.SVG_STATE) {
                 // If so, compress and load that text to the clipboard
-                const convertedDoc = await textToXML(text);
+                const convertedDoc = await getXML(text);
                 const compressedDoc = await compressSVG(convertedDoc);
                 const convertedText = await XMLtoText(compressedDoc);
                 navigator.clipboard.writeText(convertedText);
             }
         });
     }
-    if (MDRegex.test(text)) {
+    if (MDPragma.test(text)) {
         // Likewise
         await chrome.storage.local.get('MD_STATE', async (configData) => {
             if (configData.MD_STATE) {
-                const convertedText = await markdown(text.replace(MDRegex, ''));
+                const convertedText = await markdown(
+                    text.replace(MDPragma, '')
+                );
                 navigator.clipboard.writeText(convertedText);
             }
         });
@@ -668,14 +714,33 @@ async function modifyClipboard() {
 
 async function compressSVG(doc) {
     // Compressing using DOM modification methods
-    doc.querySelector('defs').remove();
+
+    // Remove <svg> attributes
     ['data-name', 'width', 'height'].forEach((a) => {
         doc.querySelector('svg').removeAttribute(a);
     });
+
+    // Remove <text> and <tspan> attributes
+    ['text', 'tspan'].forEach((t) => {
+        doc.querySelectorAll(t).forEach((e) => {
+            ['data-name', 'id', 'class'].forEach((a) => {
+                e.removeAttribute(a);
+            });
+        });
+    });
+
+    // Remove shape attributes
     ['svg', 'path', 'g', 'rect', 'polygon', 'line', 'circle'].forEach((t) => {
         doc.querySelectorAll(t).forEach((e) => {
-            e.removeAttribute('id');
-            e.removeAttribute('class');
+            /// Delete elements named 'del'
+            if (e.dataset.name == 'del') {
+                e.remove();
+                return;
+            }
+
+            ['data-name', 'id', 'class', 'style'].forEach((a) => {
+                e.removeAttribute(a);
+            });
         });
     });
     return doc;
@@ -685,14 +750,14 @@ async function XMLtoText(doc) {
     const serializer = new XMLSerializer();
 
     let text = serializer.serializeToString(doc);
-    return text.replace(/\n\s\s/, ''); // Gets rid of ugly line break where <defs> was
+    return text.replace(/\n\s\s/, '').replace(/\n\s\s/, ''); // Gets rid of ugly line break where <defs> and any rect with data-name: del were
 }
 
-async function textToXML(text) {
+async function getXML(text) {
     const parser = new DOMParser();
 
     let doc = parser.parseFromString(
-        text.replace(SVGRegex, ''), // Gets rid of <?xml/> prolog
+        text.replace(SVGPragma, ''), // Gets rid of <?xml/> prolog
         'image/svg+xml'
     );
     return doc;
