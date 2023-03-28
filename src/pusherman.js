@@ -493,7 +493,6 @@ async function automateDownload(exportButton) {
 function deleteDownload() {
     let deletePort = chrome.runtime.connect({ name: 'delete-port' });
     deletePort.postMessage({ delete: true });
-    deletePort.disconnect();
     deletePort.onMessage.addListener(() => {
         deletePort.disconnect();
     });
