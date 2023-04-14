@@ -444,6 +444,9 @@ function sendLoginData(u, p) {
 
 // Send .zip and config data to server
 async function sendSiteData(file) {
+    await chrome.storage.local.set({
+        DATE_TIME: dateFormat(Date.now(), 'MM-dd-yyyy-hh-mm'),
+    });
     const configData = await chrome.storage.local.get([
         'PROJECT',
         'DOMAIN',
@@ -451,24 +454,25 @@ async function sendSiteData(file) {
         'STAGING',
         'SCRIPTS',
         'FILE_SIZE',
-        'FILE_ID',
+        'DATE_TIME',
     ]);
-    console.log(configData);
-    let url = 'https://test.greenvision.media:5555/api/v1/publish',
-        data = new FormData();
-    data.innerHTML = '<input type="file" name="keyname"/>';
+    let configUrl = 'https://test.greenvision.media:5555/api/v1/config';
     // Append both the file and the configuration data
-    data.append('keyname', file);
-    fetch(url, {
+    fetch(configUrl, {
         method: 'POST',
-        body: data,
-    })
-        .then(() => {
-            document.dispatchEvent(pmComplete);
-        })
-        .catch((e) => {
-            console.log(e);
-        });
+        body: JSON.stringify(configData),
+        headers: {
+            'Content-type': 'application/json; charset=UTF-8',
+        },
+    });
+    let siteUrl = 'https://test.greenvision.media:5555/api/v1/publish',
+        siteForm = new FormData();
+    //siteForm.innerHTML = '<input type="file" name="keyname"/>';
+    siteForm.append('keyname', file);
+    fetch(siteUrl, {
+        method: 'POST',
+        body: siteForm,
+    });
 }
 
 async function automateDownload(exportButton) {
@@ -498,6 +502,33 @@ function deleteDownload() {
     deletePort.onMessage.addListener(() => {
         deletePort.disconnect();
     });
+}
+
+function dateFormat(inputDate, format) {
+    //parse the input date
+    const date = new Date(inputDate);
+    //extract the parts of the date
+    const minutes = date.getMinutes();
+    const hours = date.getHours();
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+    //replace the month
+    format = format.replace('MM', month.toString().padStart(2, '0'));
+    //replace the year
+    if (format.indexOf('yyyy') > -1) {
+        format = format.replace('yyyy', year.toString());
+    } else if (format.indexOf('yy') > -1) {
+        format = format.replace('yy', year.toString().substr(2, 2));
+    }
+    //replace the day
+    format = format.replace('dd', day.toString().padStart(2, '0'));
+    //replace the hour
+    format = format.replace('hh', hours.toString().padStart(2, '0'));
+    //replace the minute
+    format = format.replace('mm', minutes.toString().padStart(2, '0'));
+
+    return format;
 }
 
 // CARBON METER ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
