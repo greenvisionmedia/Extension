@@ -41,7 +41,9 @@ const pmLogin = new Event('pm-login');
 const pmComplete = new Event('pm-complete');
 
 // Wait for the export button to appear in the DOM
-lookFor('.bem-TopBar_Body_ExportButton', 1000).then(injectModal);
+lookFor('[data-automation-id="top-bar-export-code-button"]', 1000).then(
+    injectModal
+);
 
 // Add all the markup for the modal
 function injectModal(exportButton) {
