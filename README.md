@@ -1,4 +1,4 @@
-# Pusherman
+# GV Extension
 
 A chrome extension that adds functionality to the Webflow designer,
 built and maintained by the Greenvision team.
