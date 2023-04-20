@@ -1,7 +1,7 @@
 {
-    "name": "pusherman",
+    "name": "GV Publish",
     "version": "1.0.0",
-    "description": "I aint clean bad machine super cool super mean",
+    "description": "Publish your webflow site to servers running on renewable energy. ",
     "main": "index.js",
     "repository": {
         "type": "git",

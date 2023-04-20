@@ -40,6 +40,19 @@ const pmDownloaded = new Event('pm-downloaded');
 const pmLogin = new Event('pm-login');
 const pmComplete = new Event('pm-complete');
 
+// Remove the default publish button and the share button
+lookFor('[data-automation-id="publish-menu-button"]', 1000).then(
+    (publishButton) => {
+        publishButton.style.display = 'none';
+    }
+);
+
+lookFor('[data-automation-id="share-site-button"]', 1000).then(
+    (shareButton) => {
+        shareButton.style.display = 'none';
+    }
+);
+
 // Wait for the export button to appear in the DOM
 lookFor('[data-automation-id="top-bar-export-code-button"]', 1000).then(
     injectModal
@@ -49,8 +62,8 @@ lookFor('[data-automation-id="top-bar-export-code-button"]', 1000).then(
 function injectModal(exportButton) {
     // Inject HTML for publish modal button
     exportButton.insertAdjacentHTML(
-        'beforeBegin',
-        '<div id="modal-button"><svg aria-hidden="true" focusable="false" width="17" height="17" viewBox="0 0 17 19"><path d="M12.6,19.2c-4.1-2.2-7.7-5.2-11.1-8.3,0,0-1.5-1.4-1.5-1.4C3.1,6.2,6.3,3,9.7,0c2.6,2.8,5.2,5.9,7.4,9.1-2,1.5-4,2.9-6.3,4,1-1.9,2.2-3.6,3.4-5.3v1.9c-2.2-1.6-4.3-3.5-6.3-5.3,0,0,3,0,3,0-2.1,2.2-4.3,4.3-6.5,6.4v-3c3.1,3.5,6,7.1,8.1,11.3h0Z"></path></svg></div>'
+        'afterEnd',
+        '<div id="modal-button"><svg aria-hidden="true" focusable="false" width="15" height="15" viewBox="0 0 17 19"><path d="M12.6,19.2c-4.1-2.2-7.7-5.2-11.1-8.3,0,0-1.5-1.4-1.5-1.4C3.1,6.2,6.3,3,9.7,0c2.6,2.8,5.2,5.9,7.4,9.1-2,1.5-4,2.9-6.3,4,1-1.9,2.2-3.6,3.4-5.3v1.9c-2.2-1.6-4.3-3.5-6.3-5.3,0,0,3,0,3,0-2.1,2.2-4.3,4.3-6.5,6.4v-3c3.1,3.5,6,7.1,8.1,11.3h0Z"></path></svg><span>Publish</span></div>'
     );
 
     // Inject the HTML for the modal
@@ -547,12 +560,12 @@ function dateFormat(inputDate, format) {
 const swd = new co2.co2();
 
 // Wait for the part of the top bar where the preview icon
-lookFor('.bem-TopBar_Body_Group-left', 1000).then(injectMeter);
+lookFor('[data-automation-id="preview-mode-button"]', 1000).then(injectMeter);
 
-function injectMeter(topBar) {
+function injectMeter(previewButton) {
     //Inject HTML for CO2 meter
-    topBar.insertAdjacentHTML(
-        'beforeEnd',
+    previewButton.insertAdjacentHTML(
+        'afterEnd',
         '<div class="pm-meter"><div><span id="meter">X.Xg </span><span>CO<sub>2</sub></span></div></div>'
     );
 

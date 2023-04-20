@@ -55,19 +55,26 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    border-left: 1px solid var(--gray-800) !important;
+    padding: 0px 9px 0px 9px;
+}
+
+#modal-button span {
+    padding-left: 6px;
+    color: var(--gray-200);
+    cursor: default;
 }
 
 #modal-button svg {
-    fill: rgba(255, 255, 255, 0.4);
+    fill: var(--gray-200);
+}
+
+#modal-button:hover {
+    background-color: var(--gray-500);
 }
 
 #modal-button:hover svg {
-    fill: var(--gray-100);
-}
-
-#modal-button {
-    border-left: 1px solid var(--gray-700) !important;
-    padding: 0px 9px 0px 9px;
+    fill: white;
 }
 
 /**MODAL**/
@@ -481,7 +488,8 @@ dialog.close::backdrop {
 
 /**CARBON METER**/
 .pm-meter {
-    border-right: 1px solid var(--gray-700) !important;
+    border-right: 1px solid var(--gray-800) !important;
+    border-left: 1px solid var(--gray-800) !important;
     padding: 0px 9px 0px 9px;
     display: flex;
     align-items: center;

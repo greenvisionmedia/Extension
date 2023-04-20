@@ -16,7 +16,7 @@
                 "bcrypt.min.js",
                 "drawdown.min.js",
                 "co2.min.js",
-                "pusherman.min.js"
+                "content.min.js"
             ],
             "css": ["stylesheet.min.css"]
         }
