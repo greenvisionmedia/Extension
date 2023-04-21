@@ -1,6 +1,12 @@
-/***GV EXTENSION***/
+/**
+ * GV EXTENSION | Stylesheet
+ *
+ * Styling for all injected HTML
+ */
 
-/**UTILITY**/
+/* Utility
+   ========================================================================== */
+
 * {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -50,8 +56,144 @@
     outline: 1px solid var(--blue-200) !important;
 }
 
-/**BUTTON**/
-#modal-button {
+/* SETTINGS PANEL
+   ****************************************************************************/
+
+/* Panel Button
+   ========================================================================== */
+
+#panel-button {
+    display: flex;
+    position: relative;
+    align-items: center;
+    justify-content: center;
+    padding-top: 11px;
+    padding-bottom: 11px;
+    cursor: default;
+    border-bottom: 1px solid var(--gray-700);
+    max-height: 42px;
+}
+
+#panel-button svg {
+    fill: var(--gray-200);
+    width: 18px;
+    pointer-events: none;
+}
+
+#panel-button:hover svg {
+    fill: var(--gray-100);
+}
+
+#panel-button.on {
+    background-color: var(--gray-500);
+    border-top: 1px solid var(--gray-900);
+    border-bottom: 1px solid var(--gray-900);
+}
+
+#panel-button.on::after {
+    content: '';
+    background-color: var(--gray-500);
+    width: 1px;
+    position: absolute;
+    right: -1px;
+    height: 100%;
+}
+
+#panel-button.on svg {
+    fill: white;
+}
+
+/* Panel
+   ========================================================================== */
+
+#panel {
+    user-select: none;
+    position: absolute;
+    z-index: 9999;
+    display: flex;
+    background-color: var(--gray-600);
+    color: var(--gray-100);
+    font-size: 0.75rem;
+    line-height: 1.33333;
+    inset: 34px auto 0px 35px;
+    border-top: 0.0625rem solid rgb(26, 26, 26);
+    border-right: 0.0625rem solid rgb(26, 26, 26);
+    border-bottom: 0.0625rem solid rgb(26, 26, 26);
+    top: -1px;
+    height: 100%;
+}
+
+.sp-header {
+    display: flex;
+    min-height: 2.875rem;
+    padding-right: 0.625rem;
+    padding-left: 0.625rem;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--gray-500);
+    border-bottom: 0.0625rem solid rgb(26, 26, 26);
+}
+
+.sp-container {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--gray-600);
+    overflow: auto;
+    flex: 1 1 0%;
+    width: 249px;
+}
+
+.sp-title {
+    margin-top: 0px;
+    margin-bottom: 0px;
+    font-size: 1.25rem;
+    line-height: 1.2;
+    font-weight: 400;
+}
+
+.sp-trim {
+    width: 0.375rem;
+    background-color: var(--gray-500);
+}
+
+.sp-exit {
+    color: var(--gray-200);
+    border-radius: 2px;
+    display: grid;
+    align-items: center;
+    justify-content: center;
+    height: 1.5rem;
+    width: 1.5rem;
+}
+
+.sp-exit:hover {
+    background: var(--gray-400);
+    color: white;
+}
+
+.sp-exit div {
+    width: 14px;
+    height: 2px;
+    background: currentcolor;
+    grid-column: 1;
+    grid-row: 1;
+}
+
+.sp-exit div:first-child {
+    transform: rotate(45deg);
+}
+
+.sp-exit div:last-child {
+    transform: rotate(-45deg);
+}
+
+/* PUBLISH MENU
+   ****************************************************************************/
+
+/* Menu Button
+   ========================================================================== */
+
+#menu-button {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -59,34 +201,38 @@
     padding: 0px 9px 0px 9px;
 }
 
-#modal-button span {
+#menu-button span {
     padding-left: 6px;
     color: var(--gray-200);
     cursor: default;
 }
 
-#modal-button svg {
+#menu-button svg {
     fill: var(--gray-200);
 }
 
-#modal-button:hover {
+#menu-button:hover {
     background-color: var(--gray-500);
 }
 
-#modal-button:hover svg {
+#menu-button:hover svg {
     fill: white;
 }
 
-/**MODAL**/
-#modal::backdrop {
-    position: absolute;
+/* Menu
+   ========================================================================== */
+
+#menu {
+    position: fixed;
+    top: 0;
+    right: 0;
     width: 100%;
     height: 100vh;
-    background-color: rgba(0, 0, 0, 0.8);
 }
 
-#modal {
+.pm-dialog {
     position: relative;
+    margin: auto;
     background: var(--gray-600);
     border-radius: 3px;
     border: 1px solid var(--gray-800);
@@ -99,6 +245,13 @@
     width: 28rem;
     padding: 3rem 1rem 1rem 1rem;
     will-change: transform;
+}
+
+.pm-backdrop {
+    background-color: rgba(0, 0, 0, 0.8);
+    width: 100%;
+    height: 100vh;
+    position: absolute;
 }
 
 .pm-link {
@@ -428,8 +581,10 @@
     line-height: 1.5;
 }
 
-/**ANIMATION**/
-dialog[open] {
+/* Modal animation
+   ========================================================================== */
+
+#menu.on .pm-dialog {
     animation: 275ms cubic-bezier(0.22, 1, 0.36, 1) 0s 1 normal both running
         open;
 }
@@ -444,7 +599,7 @@ dialog[open] {
     }
 }
 
-dialog.close {
+#menu.closing .pm-dialog {
     animation: 100ms cubic-bezier(0.22, 1, 0.36, 1) 0s 1 normal both running
         close;
 }
@@ -455,20 +610,11 @@ dialog.close {
     }
 }
 
-dialog::backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    animation: none;
-}
-dialog[open]::backdrop {
+#menu.on .pm-backdrop {
     animation: 200ms cubic-bezier(0.22, 1, 0.36, 1) 0s 1 normal both running
         show-backdrop;
 }
-dialog.close::backdrop {
+#menu.on .pm-backdrop {
     animation: 100ms cubic-bezier(0.22, 1, 0.36, 1) 0s 1 normal both running
         hide-backdrop;
 }
@@ -486,7 +632,9 @@ dialog.close::backdrop {
     }
 }
 
-/**CARBON METER**/
+/* CARBON METER
+   ****************************************************************************/
+
 .pm-meter {
     border-right: 1px solid var(--gray-800) !important;
     border-left: 1px solid var(--gray-800) !important;
@@ -501,7 +649,9 @@ dialog.close::backdrop {
     color: var(--gray-200);
 }
 
-/**CHECKBOX**/
+/* MAGIC CLIPBOARD
+   ****************************************************************************/
+
 .pm-checkbox {
     -webkit-appearance: none;
     -moz-appearance: none;
