@@ -1,7 +1,7 @@
 /**
  * GV EXTENSION | Content script
  *
- * Injects code for the publish modal, the carbon calculator, and the SVG compressor.
+ * Injects code for the publish menu, the carbon calculator, and the SVG compressor.
  */
 
 // Query shorthand
@@ -20,18 +20,50 @@ function lookFor(lookClass, interval) {
     });
 }
 
-// PUBLISH MODAL /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SETTINGS PANEL ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Wait for the export button to appear in the DOM
+lookFor('.left-sidebar-links', 1000).then(injectPanel);
+
+function injectPanel(sidebar) {
+    // Inject HTML for settings panel
+    sidebar.insertAdjacentHTML('beforeEnd', '{{panel.html}}');
+
+    const sp = {
+        panel: g('panel'),
+        panelButton: g('panel-button'),
+        close: g('close'),
+    };
+
+    // Open the side panel
+    sp.panelButton.addEventListener('click', (e) => {
+        e.preventDefault;
+        sp.panel.classList.toggle('on');
+        sp.panelButton.classList.toggle('on');
+    });
+
+    // Close the panel
+    sidebar.addEventListener('click', (e) => {
+        e.preventDefault;
+        if (e.target != sp.panelButton) {
+            sp.panel.classList.remove('on');
+            sp.panelButton.classList.remove('on');
+        }
+    });
+}
+
+// PUBLISH MENU /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
  * This speeds up the process of exporting code from Webflow and uploading it to the server.
  *
  * Rather than downloading the .zip, uncompressing it, uploading to github/udesly/netlify etc.,
  * you just hit publish. The zip gets downloaded automatically, at which point you can drag it
- * straight back into an upload modal, all without ever leaving Webflow.
+ * straight back into an upload menu, all without ever leaving Webflow.
  *
  * Our backend service takes care of the rest, passing it straight to either the final release domain
  * or a staging domain, and making other changes according to the settings which are recorded by the pm
- * in this modal.
+ * in this menu.
  */
 
 // Register custom events for when the site .zip file is downloaded,
@@ -40,42 +72,19 @@ const pmDownloaded = new Event('pm-downloaded');
 const pmLogin = new Event('pm-login');
 const pmComplete = new Event('pm-complete');
 
-// Remove the default publish button and the share button
-lookFor('[data-automation-id="publish-menu-button"]', 1000).then(
-    (publishButton) => {
-        publishButton.style.display = 'none';
-    }
-);
-
-lookFor('[data-automation-id="share-site-button"]', 1000).then(
-    (shareButton) => {
-        shareButton.style.display = 'none';
-    }
-);
-
 // Wait for the export button to appear in the DOM
 lookFor('[data-automation-id="top-bar-export-code-button"]', 1000).then(
-    injectModal
+    injectmenu
 );
 
-// Add all the markup for the modal
-function injectModal(exportButton) {
-    // Inject HTML for publish modal button
-    exportButton.insertAdjacentHTML(
-        'afterEnd',
-        '<div id="modal-button"><svg aria-hidden="true" focusable="false" width="15" height="15" viewBox="0 0 17 19"><path d="M12.6,19.2c-4.1-2.2-7.7-5.2-11.1-8.3,0,0-1.5-1.4-1.5-1.4C3.1,6.2,6.3,3,9.7,0c2.6,2.8,5.2,5.9,7.4,9.1-2,1.5-4,2.9-6.3,4,1-1.9,2.2-3.6,3.4-5.3v1.9c-2.2-1.6-4.3-3.5-6.3-5.3,0,0,3,0,3,0-2.1,2.2-4.3,4.3-6.5,6.4v-3c3.1,3.5,6,7.1,8.1,11.3h0Z"></path></svg><span>Publish</span></div>'
-    );
+function injectMenu(exportButton) {
+    // Inject HTML for publish menu
+    exportButton.insertAdjacentHTML('afterEnd', '{{menu.html}}');
 
-    // Inject the HTML for the modal
-    let modal = document.createElement('dialog');
-    modal.id = 'modal';
-    modal.innerHTML = '{{modal.html}}'; // This string gets replaced during gulp build by ./modal.html
-    document.body.appendChild(modal);
-
-    // Setup a publish modal object with all UI elements and methods for closing, configuring data and reseting
+    // Setup a publish menu object with all UI elements and methods for closing, configuring data and reseting
     const pm = {
-        modal: modal,
-        modalButton: g('modal-button'),
+        menu: g('menu'),
+        menuButton: g('menu-button'),
         exit: g('exit'),
         page1: g('page-1'),
         page2: g('page-2'),
@@ -108,22 +117,25 @@ function injectModal(exportButton) {
             loading: g('loading'),
             complete: g('complete'),
         },
-        close: closeModal,
-        reset: resetModal,
-        configure: configureModal,
+        close: closeMenu,
+        reset: resetMenu,
+        configure: configureMenu,
         setConfig: setConfigData,
     };
+
+    // Move the Menu to a higher DOM position where it can properly overlay the designer
+    g('designer-app-react-mount').appendChild(pm.menu);
 
     pm.reset(); // Resets various pm state changes using stored chrome variables
     pm.configure(); // Sets the advanced options menu to the configured state
 
-    // Toggle modal
-    pm.modalButton.addEventListener('click', (e) => {
+    // Open the menu
+    pm.menuButton.addEventListener('click', (e) => {
         e.preventDefault;
-        modal.showModal();
+        pm.menu.classList.add('on');
     });
 
-    // Close the modal
+    // Close the menu
     pm.exit.addEventListener('click', (e) => {
         e.preventDefault;
         pm.close();
@@ -290,18 +302,18 @@ function injectModal(exportButton) {
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
-// Method to close the UI, which is a bit more complicated than just modal.close() because of the animation
-function closeModal() {
-    this.modal.classList.add('close');
+// Method to close the UI, which is a bit more complicated than just css display=none/flex because of the animation
+function closeMenu() {
+    this.menu.classList.add('closing');
     setTimeout(() => {
-        this.modal.classList.remove('close');
-        this.modal.close();
+        this.menu.classList.remove('closing');
+        this.menu.classList.remove('on');
     }, 100);
 }
 
-// Function to reset the pm to the beginning state whenever user closes modal, and whenever Webflow is reloaded
-async function resetModal() {
-    // Gets the stored values and inputs them into the modal settings
+// Function to reset the pm to the beginning state whenever user closes menu, and whenever Webflow is reloaded
+async function resetMenu() {
+    // Gets the stored values and inputs them into the menu settings
     const configData = await chrome.storage.local.get([
         'PROJECT',
         'DOMAIN',
@@ -346,8 +358,8 @@ async function resetModal() {
 }
 
 // Ensures the advanced options pm is configured based on the current settings
-async function configureModal() {
-    // This sets the link at the top of the publish modal to be whichever URL your site will be published to, determined by the config settings
+async function configureMenu() {
+    // This sets the link at the top of the publish menu to be whichever URL your site will be published to, determined by the config settings
     // Also sets the link that appears at the end of the upload process
     const configData = await chrome.storage.local.get([
         'PROJECT',
@@ -438,7 +450,7 @@ function setConfigData() {
         .then(this.configure());
 }
 
-// Sends the login data to the server and sets a loginState bool that affects resetModal()
+// Sends the login data to the server and sets a loginState bool that affects resetMenu()
 function sendLoginData(u, p) {
     let url = 'https://test.greenvision.media:5555/api/v1/login',
         data = JSON.stringify({ username: u, password: p });
@@ -490,16 +502,27 @@ async function sendSiteData(file) {
 
 async function automateDownload(exportButton) {
     // Automates the normal user download process using queries and .click()
-    const parentClass =
+    const buttonRowSelector =
         'div[style="display: flex; justify-content: space-between; flex: 0 1 auto;"]';
+    const exportModalSelector =
+        'div[style^="opacity: 1; position: fixed; background-color: rgba(0, 0, 0, 0.8)"]';
+
     exportButton.click();
-    const zipButton = await lookFor(parentClass + ' button:nth-child(4)', 10);
+    const exportModal = await lookFor(exportModalSelector);
+    exportModal.style.display = 'none';
+    const zipButton = await lookFor(
+        buttonRowSelector + ' button:nth-child(4)',
+        10
+    );
     zipButton.click();
-    const downloadButton = await lookFor(parentClass + ' a[href^="blob:"]', 10);
+    const downloadButton = await lookFor(
+        buttonRowSelector + ' a[href^="blob:"]',
+        10
+    );
     // Get the blob URL of the zip file the href attribute of the download button
     let downloadURL = downloadButton.href;
     // Exit the download modal
-    document.querySelector(parentClass + ' button:nth-child(3)').click();
+    document.querySelector(buttonRowSelector + ' button:nth-child(3)').click();
     // Open a port with the background script, so that we can use the download API
     let downloadPort = chrome.runtime.connect({ name: 'download-port' });
     downloadPort.postMessage({ url: downloadURL });
@@ -575,7 +598,7 @@ function injectMeter(previewButton) {
         setCarbon: setCarbonData,
     };
 
-    // When using the GV publish modal, this custom event will fire. Use this to update the carbon meter
+    // When using the GV publish menu, this custom event will fire. Use this to update the carbon meter
     document.addEventListener('pm-downloaded', cm.setCarbon());
 }
 
@@ -628,7 +651,14 @@ function injectCheckbox(HTMLEmbed) {
         // Inject the checkboxes and the associated markup
         checkboxDiv.insertAdjacentHTML(
             'beforeEnd',
-            '<label class="pm-checkbox-label"><input id="svg-checkbox" class="pm-checkbox" type="checkbox"/>Compress SVG</label><label class="pm-checkbox-label"><input id="md-checkbox" class="pm-checkbox" type="checkbox"/>Convert MD</label>'
+            `<label class="pm-checkbox-label">
+                <input id="svg-checkbox" class="pm-checkbox" type="checkbox"/>
+                Compress SVG
+            </label>
+            <label class="pm-checkbox-label">
+                <input id="md-checkbox" class="pm-checkbox" type="checkbox"/>
+                Convert MD
+            </label>`
         );
 
         // Register a magic clipboard ui object with both checkboxes and a config method
@@ -779,4 +809,29 @@ async function getXML(text) {
         'image/svg+xml'
     );
     return doc;
+}
+
+// UI SIMPLIFICATION ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * This removes certain elements of the Webflow editor that we at Greenvision generally do not use,
+ * including Ecommerce, Users, Logic (soon), and the default methods of sharing and publishing
+ */
+
+const removedElements = [
+    'share-site-button',
+    'left-sidebar-commerce-button',
+    'left-sidebar-cms-button',
+    'left-sidebar-users-button',
+];
+
+lookFor('[data-automation-id="publish-menu-button"]', 100).then(simplifyUI);
+
+function simplifyUI(publishButton) {
+    publishButton.style.display = 'none';
+    removedElements.forEach((e) => {
+        lookFor('[data-automation-id="' + e + '"]', 1000).then((e) => {
+            e.style.display = 'none';
+        });
+    });
 }
