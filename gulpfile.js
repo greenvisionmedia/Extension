@@ -12,7 +12,6 @@ function markup() {
     return gulp
         .src('./src/*.html')
         .pipe(htmlmin({ collapseWhitespace: true, removeComments: true }))
-        .pipe(rename({ suffix: '.min' }))
         .pipe(gulp.dest('./public'));
 }
 
@@ -36,19 +35,13 @@ function scripts() {
             //     })
             // )
             .pipe(
-                replace('{{modal.html}}', () => {
-                    return `${fs.readFileSync(
-                        './public/modal.min.html',
-                        'utf8'
-                    )}`;
+                replace('{{menu.html}}', () => {
+                    return `${fs.readFileSync('./public/menu.html', 'utf8')}`;
                 })
             )
             .pipe(
                 replace('{{panel.html}}', () => {
-                    return `${fs.readFileSync(
-                        './public/panel.min.html',
-                        'utf8'
-                    )}`;
+                    return `${fs.readFileSync('./public/panel.html', 'utf8')}`;
                 })
             )
             .pipe(rename({ suffix: '.min' }))

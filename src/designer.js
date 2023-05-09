@@ -20,6 +20,28 @@ function lookFor(lookClass, interval) {
     });
 }
 
+// LOGIN DIALOG ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Wait for the react mount to be accessible
+lookFor('#designer-app-react-mount', 1000).then(injectDialog);
+
+function injectDialog(mount) {
+    // Inject HTML for settings panel
+    mount.insertAdjacentHTML('beforeEnd', '{{dialog.html}}');
+
+    const login = {
+        dialog: g('dialog'),
+        exit: g('exit'),
+        page1: g('page-1'),
+        page2: g('page-2'),
+        page3: g('page-3'),
+        login: g('login'),
+        username: g('username'),
+        password: g('password'),
+        close: closeMenu,
+    };
+}
+
 // SETTINGS PANEL ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Wait for the export button to appear in the DOM
@@ -29,25 +51,25 @@ function injectPanel(sidebar) {
     // Inject HTML for settings panel
     sidebar.insertAdjacentHTML('beforeEnd', '{{panel.html}}');
 
-    const sp = {
+    const settings = {
         panel: g('panel'),
         panelButton: g('panel-button'),
         close: g('close'),
     };
 
     // Open the side panel
-    sp.panelButton.addEventListener('click', (e) => {
+    settings.panelButton.addEventListener('click', (e) => {
         e.preventDefault;
-        sp.panel.classList.toggle('on');
-        sp.panelButton.classList.toggle('on');
+        settings.panel.classList.toggle('on');
+        settings.panelButton.classList.toggle('on');
     });
 
     // Close the panel
     sidebar.addEventListener('click', (e) => {
         e.preventDefault;
-        if (e.target != sp.panelButton) {
-            sp.panel.classList.remove('on');
-            sp.panelButton.classList.remove('on');
+        if (e.target != settings.panelButton) {
+            settings.panel.classList.remove('on');
+            settings.panelButton.classList.remove('on');
         }
     });
 }
@@ -62,19 +84,19 @@ function injectPanel(sidebar) {
  * straight back into an upload menu, all without ever leaving Webflow.
  *
  * Our backend service takes care of the rest, passing it straight to either the final release domain
- * or a staging domain, and making other changes according to the settings which are recorded by the pm
+ * or a staging domain, and making other changes according to the settings which are recorded by the publish
  * in this menu.
  */
 
 // Register custom events for when the site .zip file is downloaded,
 // when a user successfully logs in, and whenever files are successfully uploaded
-const pmDownloaded = new Event('pm-downloaded');
-const pmLogin = new Event('pm-login');
-const pmComplete = new Event('pm-complete');
+const pmDownloaded = new Event('publish-downloaded');
+const pmLogin = new Event('publish-login');
+const pmComplete = new Event('publish-complete');
 
 // Wait for the export button to appear in the DOM
 lookFor('[data-automation-id="top-bar-export-code-button"]', 1000).then(
-    injectmenu
+    injectMenu
 );
 
 function injectMenu(exportButton) {
@@ -82,16 +104,10 @@ function injectMenu(exportButton) {
     exportButton.insertAdjacentHTML('afterEnd', '{{menu.html}}');
 
     // Setup a publish menu object with all UI elements and methods for closing, configuring data and reseting
-    const pm = {
+    const publish = {
         menu: g('menu'),
         menuButton: g('menu-button'),
         exit: g('exit'),
-        page1: g('page-1'),
-        page2: g('page-2'),
-        page3: g('page-3'),
-        login: g('login'),
-        username: g('username'),
-        password: g('password'),
         cancel: g('cancel'),
         publish: g('publish'),
         subtitle: g('subtitle'),
@@ -123,178 +139,176 @@ function injectMenu(exportButton) {
         setConfig: setConfigData,
     };
 
-    // Move the Menu to a higher DOM position where it can properly overlay the designer
-    g('designer-app-react-mount').appendChild(pm.menu);
-
-    pm.reset(); // Resets various pm state changes using stored chrome variables
-    pm.configure(); // Sets the advanced options menu to the configured state
+    publish.reset(); // Resets various publish state changes using stored chrome variables
+    publish.configure(); // Sets the advanced options menu to the configured state
 
     // Open the menu
-    pm.menuButton.addEventListener('click', (e) => {
+    publish.menuButton.addEventListener('click', (e) => {
         e.preventDefault;
-        pm.menu.classList.add('on');
+        publish.menu.classList.add('on');
     });
 
     // Close the menu
-    pm.exit.addEventListener('click', (e) => {
+    publish.exit.addEventListener('click', (e) => {
         e.preventDefault;
-        pm.close();
-        pm.reset();
+        publish.close();
+        publish.reset();
     });
 
-    pm.cancel.addEventListener('click', (e) => {
+    publish.cancel.addEventListener('click', (e) => {
         e.preventDefault;
-        pm.close();
-        pm.reset();
+        publish.close();
+        publish.reset();
     });
 
     document.addEventListener('keyup', (e) => {
         e.preventDefault;
         if (e.key === 'Escape') {
-            pm.close();
-            pm.reset();
+            publish.close();
+            publish.reset();
         }
     });
 
     // Handle login
-    // pm.login.addEventListener('click', (e) => {
+    // publish.login.addEventListener('click', (e) => {
     //     e.preventDefault;
-    //     sendLoginData(pm.username.value, pm.password.value);
+    //     sendLoginData(publish.username.value, publish.password.value);
     // });
 
     // document.addEventListener('keyup', (e) => {
     //     e.preventDefault;
-    //     if (e.key === 'Enter' && pm.page1.classList.contains('on')) {
+    //     if (e.key === 'Enter' && publish.page1.classList.contains('on')) {
     //         e.preventDefault;
-    //         sendLoginData(pm.username.value, pm.password.value);
+    //         sendLoginData(publish.username.value, publish.password.value);
     //     }
     // });
 
-    // document.addEventListener('pm-login', (e) => {
-    //     pm.page1.classList.remove('on');
-    //     pm.page2.classList.add('on');
+    // document.addEventListener('publish-login', (e) => {
+    //     publish.page1.classList.remove('on');
+    //     publish.page2.classList.add('on');
     // });
 
-    pm.login.addEventListener('click', (e) => {
-        pm.page1.classList.remove('on');
-        pm.page2.classList.add('on');
+    publish.login.addEventListener('click', (e) => {
+        publish.page1.classList.remove('on');
+        publish.page2.classList.add('on');
     });
 
     // Toggle advanced options
-    pm.settings.addEventListener('click', (e) => {
+    publish.settings.addEventListener('click', (e) => {
         e.preventDefault;
-        pm.settings.classList.toggle('on');
-        pm.form.classList.toggle('on');
+        publish.settings.classList.toggle('on');
+        publish.form.classList.toggle('on');
     });
 
     // These two buttons basically make up a 'radio button', only one should be on. I'll use which element has the "on" class to determine which is pressed.
-    pm.inputs.staging.addEventListener('click', (e) => {
+    publish.inputs.staging.addEventListener('click', (e) => {
         e.preventDefault;
-        pm.inputs.release.classList.remove('on');
-        pm.inputs.staging.classList.add('on');
+        publish.inputs.release.classList.remove('on');
+        publish.inputs.staging.classList.add('on');
     });
 
-    pm.inputs.release.addEventListener('click', (e) => {
+    publish.inputs.release.addEventListener('click', (e) => {
         e.preventDefault;
-        pm.inputs.release.classList.add('on');
-        pm.inputs.staging.classList.remove('on');
+        publish.inputs.release.classList.add('on');
+        publish.inputs.staging.classList.remove('on');
     });
 
     // Hitting save turns pointerevents off on the form inputs, shows a new 'restart' button where save was
-    pm.save.addEventListener('click', (e) => {
+    publish.save.addEventListener('click', (e) => {
         e.preventDefault;
-        Object.values(pm.inputs).forEach((e) => {
+        Object.values(publish.inputs).forEach((e) => {
             e.disabled = true;
         });
-        pm.save.classList.remove('on');
-        pm.restart.classList.add('on');
+        publish.save.classList.remove('on');
+        publish.restart.classList.add('on');
 
-        pm.setConfig(); //Updates configuration data in chrome storage/GUI
+        publish.setConfig(); //Updates configuration data in chrome storage/GUI
     });
 
     // Hitting restart undoes the previous changes and allows access to the form again
-    pm.restart.addEventListener('click', (e) => {
+    publish.restart.addEventListener('click', (e) => {
         e.preventDefault;
-        Object.values(pm.inputs).forEach((e) => {
+        Object.values(publish.inputs).forEach((e) => {
             e.disabled = false;
         });
-        pm.save.classList.add('on');
-        pm.restart.classList.remove('on');
+        publish.save.classList.add('on');
+        publish.restart.classList.remove('on');
 
-        g('script-row').remove(); // Removes the fancy script pm
+        g('script-row').remove(); // Removes the fancy script publish
     });
 
     // By default the restart button shows 'Configured'; hovering over the restart button shows the text 'Restart'
-    pm.restart.addEventListener('mouseenter', (e) => {
+    publish.restart.addEventListener('mouseenter', (e) => {
         e.preventDefault;
-        pm.restart.innerHTML = 'Restart';
+        publish.restart.innerHTML = 'Restart';
     });
-    pm.restart.addEventListener('mouseleave', (e) => {
+    publish.restart.addEventListener('mouseleave', (e) => {
         e.preventDefault;
-        pm.restart.innerHTML = 'Configured';
+        publish.restart.innerHTML = 'Configured';
     });
 
     // Hitting publish shows the drag and drop page with the loading wheel, and begins automating the download
-    pm.publish.addEventListener('click', (e) => {
-        pm.page2.classList.remove('on');
-        pm.page3.classList.add('on');
+    publish.publish.addEventListener('click', (e) => {
+        publish.page2.classList.remove('on');
+        publish.page3.classList.add('on');
 
         downloadId = automateDownload(exportButton);
     });
 
     // Alerts user that their file was downloaded and replaces the loading wheel with a file upload icon
-    document.addEventListener('pm-downloaded', () => {
-        pm.icons.loading.classList.remove('on');
-        pm.icons.file.classList.add('on');
-        pm.uploadLabel.classList.add('on');
-        pm.dropText.innerHTML = 'Drag your folder here, or click to upload';
+    document.addEventListener('publish-downloaded', () => {
+        publish.icons.loading.classList.remove('on');
+        publish.icons.file.classList.add('on');
+        publish.uploadLabel.classList.add('on');
+        publish.dropText.innerHTML =
+            'Drag your folder here, or click to upload';
     });
 
     // Dragging files over the drop area changes styles to alert the user; dropping the file sends a fetch request to the backend
-    pm.dropArea.addEventListener('dragenter', (e) => {
+    publish.dropArea.addEventListener('dragenter', (e) => {
         e.preventDefault;
-        pm.dropArea.classList.add('on');
+        publish.dropArea.classList.add('on');
     });
-    pm.dropArea.addEventListener('dragover', (e) => {
+    publish.dropArea.addEventListener('dragover', (e) => {
         e.preventDefault;
-        pm.dropArea.classList.add('on');
+        publish.dropArea.classList.add('on');
     });
-    pm.dropArea.addEventListener('dragleave', (e) => {
+    publish.dropArea.addEventListener('dragleave', (e) => {
         e.preventDefault;
-        pm.dropArea.classList.remove('on');
+        publish.dropArea.classList.remove('on');
     });
-    pm.dropArea.addEventListener('drop', (e) => {
+    publish.dropArea.addEventListener('drop', (e) => {
         e.preventDefault;
         // Sends data stored in drag-and-drop API
         sendSiteData(e.dataTransfer.files[0]);
-        pm.icons.file.classList.remove('on');
-        pm.icons.loading.classList.add('on');
-        pm.uploadLabel.classList.remove('on');
-        pm.dropArea.classList.remove('on');
-        pm.dropText.innerHTML = 'Publishing your files...';
+        publish.icons.file.classList.remove('on');
+        publish.icons.loading.classList.add('on');
+        publish.uploadLabel.classList.remove('on');
+        publish.dropArea.classList.remove('on');
+        publish.dropText.innerHTML = 'Publishing your files...';
     });
 
     // Ads the ability to use the upload field as an input button, as an alternative to dragging and dropping
-    pm.upload.addEventListener('change', (e) => {
+    publish.upload.addEventListener('change', (e) => {
         e.preventDefault;
         // Sends the .zip data
-        sendSiteData(pm.upload.files[0]);
-        pm.icons.file.classList.remove('on');
-        pm.icons.loading.classList.add('on');
-        pm.uploadLabel.classList.remove('on');
-        pm.dropText.innerHTML = 'Publishing your files...';
+        sendSiteData(publish.upload.files[0]);
+        publish.icons.file.classList.remove('on');
+        publish.icons.loading.classList.add('on');
+        publish.uploadLabel.classList.remove('on');
+        publish.dropText.innerHTML = 'Publishing your files...';
     });
 
     // Shows checkmark icon and link to published site. Congrats!! Ya did it
-    document.addEventListener('pm-complete', () => {
-        pm.icons.loading.classList.remove('on');
-        pm.icons.complete.classList.add('on');
-        pm.dropText.classList.remove('on');
-        pm.link.classList.add('on');
+    document.addEventListener('publish-complete', () => {
+        publish.icons.loading.classList.remove('on');
+        publish.icons.complete.classList.add('on');
+        publish.dropText.classList.remove('on');
+        publish.link.classList.add('on');
         deleteDownload();
     });
     //////////////////////////////////////////////////DELETE/////////////////////////////////////////////////////////
-    pm.page1.addEventListener('drop', (e) => {
+    publish.page1.addEventListener('drop', (e) => {
         e.preventDefault;
         // Sends data stored in drag-and-drop API
         sendSiteData(e.dataTransfer.files[0]);
@@ -311,7 +325,7 @@ function closeMenu() {
     }, 100);
 }
 
-// Function to reset the pm to the beginning state whenever user closes menu, and whenever Webflow is reloaded
+// Function to reset the publish to the beginning state whenever user closes menu, and whenever Webflow is reloaded
 async function resetMenu() {
     // Gets the stored values and inputs them into the menu settings
     const configData = await chrome.storage.local.get([
@@ -335,7 +349,7 @@ async function resetMenu() {
         this.inputs.release.classList.add('on');
     }
 
-    // Sets the pm back to page 1 if user is not logged in, to page 2 otherwise
+    // Sets the publish back to page 1 if user is not logged in, to page 2 otherwise
     if (configData.LOGIN_STATE === false) {
         this.page1.classList.add('on');
         this.page2.classList.remove('on');
@@ -344,7 +358,7 @@ async function resetMenu() {
         this.page1.classList.remove('on');
     }
 
-    // Resets the icons and undoes other various pm changes
+    // Resets the icons and undoes other various publish changes
     this.page3.classList.remove('on');
     this.icons.file.classList.remove('on');
     this.icons.loading.classList.add('on');
@@ -357,7 +371,7 @@ async function resetMenu() {
     this.dropText.innerHTML = 'Downloading your files...';
 }
 
-// Ensures the advanced options pm is configured based on the current settings
+// Ensures the advanced options publish is configured based on the current settings
 async function configureMenu() {
     // This sets the link at the top of the publish menu to be whichever URL your site will be published to, determined by the config settings
     // Also sets the link that appears at the end of the upload process
@@ -400,13 +414,13 @@ async function configureMenu() {
             this.site.querySelector('span').innerHTML = configData.DOMAIN;
         }
 
-        // This is some code I wrote to give nice styles to the list of scripts, reminiscent of Webflow's class adder pm
+        // This is some code I wrote to give nice styles to the list of scripts, reminiscent of Webflow's class adder publish
         // Pretty much useless, but makes it more obvious which scripts are going to be added and looks cool
 
         // Adds a new div that sits on top of the existing script input element
         const scriptRow = document.createElement('div');
         scriptRow.id = 'script-row';
-        scriptRow.classList.add('pm-text');
+        scriptRow.classList.add('publish-text');
 
         // Adds the scripts
         this.inputs.scripts.insertAdjacentElement('afterend', scriptRow);
@@ -589,17 +603,17 @@ function injectMeter(previewButton) {
     //Inject HTML for CO2 meter
     previewButton.insertAdjacentHTML(
         'afterEnd',
-        '<div class="pm-meter"><div><span id="meter">X.Xg </span><span>CO<sub>2</sub></span></div></div>'
+        '<div class="gv-meter"><div><span id="meter">X.Xg </span><span>CO<sub>2</sub></span></div></div>'
     );
 
     // Set up a carbon meter object with the meter and a setCarbon method
-    const cm = {
+    const carbon = {
         meter: g('meter'),
         setCarbon: setCarbonData,
     };
 
     // When using the GV publish menu, this custom event will fire. Use this to update the carbon meter
-    document.addEventListener('pm-downloaded', cm.setCarbon());
+    document.addEventListener('publish-downloaded', carbon.setCarbon());
 }
 
 async function setCarbonData() {
@@ -651,12 +665,12 @@ function injectCheckbox(HTMLEmbed) {
         // Inject the checkboxes and the associated markup
         checkboxDiv.insertAdjacentHTML(
             'beforeEnd',
-            `<label class="pm-checkbox-label">
-                <input id="svg-checkbox" class="pm-checkbox" type="checkbox"/>
+            `<label class="publish-checkbox-label">
+                <input id="svg-checkbox" class="gv-checkbox" type="checkbox"/>
                 Compress SVG
             </label>
-            <label class="pm-checkbox-label">
-                <input id="md-checkbox" class="pm-checkbox" type="checkbox"/>
+            <label class="publish-checkbox-label">
+                <input id="md-checkbox" class="gv-checkbox" type="checkbox"/>
                 Convert MD
             </label>`
         );
