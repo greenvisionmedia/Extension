@@ -68,6 +68,8 @@
     justify-content: center;
     align-items: center;
     cursor: default;
+    box-sizing: border-box;
+    border-top: 1px solid transparent;
     border-bottom: 1px solid var(--gray-700);
     padding-top: 11px;
     padding-bottom: 11px;
@@ -112,9 +114,9 @@
     z-index: 9999;
     inset: 34px auto 0px 35px;
     top: -1px;
-    border-top: 0.0625rem solid rgb(26, 26, 26);
-    border-right: 0.0625rem solid rgb(26, 26, 26);
-    border-bottom: 0.0625rem solid rgb(26, 26, 26);
+    border-top: 0.0625rem solid var(--gray-900);
+    border-right: 0.0625rem solid var(--gray-900);
+    border-bottom: 0.0625rem solid var(--gray-900);
     background-color: var(--gray-600);
     height: 100%;
     color: var(--gray-100);
@@ -127,7 +129,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 0.0625rem solid rgb(26, 26, 26);
+    border-bottom: 0.0625rem solid var(--gray-900);
     background-color: var(--gray-500);
     padding-right: 0.625rem;
     padding-left: 0.625rem;
@@ -138,6 +140,7 @@
     display: flex;
     flex: 1 1 0%;
     flex-direction: column;
+    border-left: 0.0625rem solid var(--gray-900);
     background-color: var(--gray-600);
     width: 249px;
     overflow: auto;
@@ -187,39 +190,52 @@
     transform: rotate(-45deg);
 }
 
+.gv-panel_button {
+    display: flex;
+    align-items: center;
+    cursor: default;
+    border-top-width: 0.0625rem;
+    border-bottom-width: 0.0625rem;
+    border-style: none none solid;
+    border-top-color: var(--gray-900);
+    border-bottom-color: var(--gray-900);
+    background-color: transparent;
+    padding: 0.6875rem;
+    min-height: 2.8125rem;
+    color: rgb(217, 217, 217);
+    text-align: left;
+    text-decoration: none;
+}
+
+.gv-panel_button:hover {
+    background: var(--gray-500);
+}
+
 /* LOGIN DIALOG
    ****************************************************************************/
 
-#dialog {
-    position: fixed;
-    top: 0;
-    right: 0;
+#dialog::backdrop {
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.8);
     width: 100%;
     height: 100vh;
 }
 
-.gv-dialog {
+#dialog {
     position: relative;
     will-change: transform;
     margin: auto;
-    box-shadow: rgba(0, 0, 0, 0.3);
+    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.3);
     border: 1px solid var(--gray-800);
     border-radius: 3px;
     background: var(--gray-600);
     padding: 3rem 1rem 1rem 1rem;
-    width: 28rem;
+    width: 22rem;
     color: var(--gray-100);
     font-size: 12px;
     font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
         Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', Helvetica, Arial,
         'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
-}
-
-.gv-dialog::backdrop {
-    position: absolute;
-    background-color: rgba(0, 0, 0, 0.8);
-    width: 100%;
-    height: 100vh;
 }
 
 .gv-dialog_menu {
@@ -291,10 +307,89 @@
     margin-top: 1rem;
 }
 
+.gv-dialog_button {
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 2px;
+    padding: 7px 12px 7px 12px;
+    color: var(--gray-100);
+    font-size: 12px;
+}
+
+.gv-dialog_button {
+    justify-content: center;
+    border-width: 1px;
+    border-color: var(--gray-700);
+    background: var(--gray-400);
+    width: 6rem;
+    color: white;
+}
+
+.gv-dialog_button:hover {
+    cursor: pointer;
+    background: var(--gray-350);
+}
+
+.gv-dialog_button:active {
+    background: var(--gray-400);
+}
+
+.gv-dialog_label {
+    align-self: flex-start;
+    margin-bottom: -0.6em;
+    width: 100%;
+    font-size: 10px;
+    font-size: 0.85em;
+    white-space: nowrap;
+}
+
+.gv-dialog_text,
+.gv-dialog_button {
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 2px;
+    padding: 7px 12px 7px 12px;
+    color: var(--gray-100);
+    font-size: 12px;
+}
+
+.gv-dialog_text {
+    outline: none;
+    border-color: var(--gray-900);
+    background: var(--gray-800);
+    width: 100%;
+}
+
+.gv-dialog_button {
+    justify-content: center;
+    border-width: 1px;
+    border-color: var(--gray-700);
+    background: var(--gray-400);
+    width: 6rem;
+    color: white;
+}
+
+.gv-dialog_button:hover {
+    cursor: pointer;
+    background: var(--gray-350);
+}
+
+.gv-dialog_button:active {
+    background: var(--gray-400);
+}
+
+.gv-dialog_button-row,
+.gv-dialog_text-row {
+    display: flex;
+    justify-content: end;
+    gap: 12px;
+    width: 100%;
+}
+
 /* Dialog animation
    ========================================================================== */
 
-#dialog.on .gv-dialog {
+#dialog[open] {
     animation: 275ms cubic-bezier(0.22, 1, 0.36, 1) 0s 1 normal both running
         open;
 }
@@ -309,7 +404,7 @@
     }
 }
 
-#dialog.closing .gv-menu_dialog {
+#dialog.closing {
     animation: 100ms cubic-bezier(0.22, 1, 0.36, 1) 0s 1 normal both running
         close;
 }
@@ -320,11 +415,11 @@
     }
 }
 
-#dialog.on .gv-dialog::backdrop {
+#dialog[open]::backdrop {
     animation: 200ms cubic-bezier(0.22, 1, 0.36, 1) 0s 1 normal both running
         show-backdrop;
 }
-#dialog.on .gv-dialog::backdrop {
+#dialog.closing::backdrop {
     animation: 100ms cubic-bezier(0.22, 1, 0.36, 1) 0s 1 normal both running
         hide-backdrop;
 }
@@ -345,10 +440,11 @@
 /* PUBLISH MENU
    ****************************************************************************/
 
-/* Menu Button
-   ========================================================================== */
+/**
+ * Menu button
+ */
 
-#menu_button {
+#menu-button {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -356,26 +452,81 @@
     padding: 0px 9px 0px 9px;
 }
 
-#menu_button span {
+#menu-button span {
     cursor: default;
     padding-left: 6px;
     color: var(--gray-200);
 }
 
-#menu_button svg {
+#menu-button svg {
     fill: var(--gray-200);
 }
 
-#menu_button:hover {
+#menu-button:hover {
     background-color: var(--gray-500);
+    color: white;
 }
 
-#menu_button:hover svg {
+#menu-button:hover svg {
     fill: white;
 }
 
-/* Menu
-   ========================================================================== */
+#menu-button.on {
+    background-color: var(--gray-900);
+    color: white;
+}
+
+#menu-button.on svg {
+    fill: white;
+}
+
+/**
+ * Menu
+ */
+
+#menu {
+    position: absolute;
+    top: 44px;
+    right: 11px;
+    transform: translate3d(0px, 0px, 0px);
+    box-sizing: content-box;
+    box-shadow: rgba(0, 0, 0, 0.15) 0px 5px 10px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(33, 33, 33);
+    border-radius: 3px;
+    background: var(--gray-600);
+    width: 24rem;
+    height: auto;
+    overflow: hidden;
+    font-size: 11px;
+}
+
+.gv-menu_page {
+    flex-direction: column;
+    width: 100%;
+}
+
+.gv-menu_subtitle {
+    margin: 0rem;
+    padding: 0.75rem;
+}
+
+.gv-menu_container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end !important;
+    gap: 12px;
+    padding: 0.75rem;
+}
+
+.gv_menu-publish-wrapper {
+    border-top: 1px solid var(--gray-900);
+}
+
+.gv_menu-form {
+    padding: 0.75rem;
+}
 
 .gv-menu_link {
     color: var(--gray-100) !important;
@@ -391,13 +542,18 @@
     left: 0.3em;
     margin-right: 0.3em;
 }
-.gv-menu_settings {
+
+.gv-menu_options-wrapper {
+    border-top: 1px solid var(--gray-900);
+    padding: 0.75rem;
+}
+
+.gv-menu_options {
     display: flex;
     position: relative;
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    margin-top: 1rem;
     border-style: none;
     border-radius: 2px;
     background: var(--gray-500);
@@ -406,11 +562,11 @@
     font-size: 10;
 }
 
-.gv-menu_settings.on svg {
+.gv-menu_options.on svg {
     transform: rotate(90deg);
 }
 
-.gv-menu_settings:hover {
+.gv-menu_options:hover {
     background: var(--gray-400);
 }
 
@@ -469,7 +625,7 @@
 .gv-menu_text {
     outline: none;
     border-color: var(--gray-900);
-    background: var(--gray-800);
+    background-color: var(--gray-800);
     width: 100%;
 }
 
@@ -505,16 +661,6 @@
     justify-content: space-around;
     align-items: stretch;
     width: 100%;
-}
-
-#login {
-    margin-top: 0.75rem;
-}
-
-#subtitle {
-    position: absolute;
-    margin-top: -24px;
-    background: var(--gray-600);
 }
 
 #site-code {
@@ -554,9 +700,12 @@
     background-color: var(--green-400) !important;
 }
 
+#save {
+    margin-left: 0.5rem;
+}
+
 #save,
 #restart {
-    margin-top: 0.75rem;
     background-color: var(--blue-400);
 }
 
@@ -572,7 +721,6 @@
 
 #form {
     appearance: none;
-    margin-top: 2rem;
 }
 
 #form input:disabled {
@@ -637,7 +785,7 @@
 /* CARBON METER
    ****************************************************************************/
 
-.gv-meter {
+#meter-button {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -647,7 +795,7 @@
     width: 7em;
 }
 
-.gv-meter span:not(#meter) {
+#meter-button {
     color: var(--gray-200);
 }
 

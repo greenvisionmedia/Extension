@@ -44,6 +44,16 @@ function scripts() {
                     return `${fs.readFileSync('./public/panel.html', 'utf8')}`;
                 })
             )
+            .pipe(
+                replace('{{dialog.html}}', () => {
+                    return `${fs.readFileSync('./public/dialog.html', 'utf8')}`;
+                })
+            )
+            .pipe(
+                replace('{{meter.html}}', () => {
+                    return `${fs.readFileSync('./public/meter.html', 'utf8')}`;
+                })
+            )
             .pipe(rename({ suffix: '.min' }))
             .pipe(gulp.dest('./public'))
     );
@@ -58,3 +68,14 @@ function clean() {
 }
 
 gulp.task('default', gulp.series(markup, styles, scripts, static, clean));
+
+/**
+ * To-do:
+ *  - Replace all the adjacentHTML calls with node creation. This is security
+ *    best practice and not doing it could get the extension rejected.
+ *    - https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Safely_inserting_external_content_into_a_page
+ *  - Write code for the carbon budget tool.
+ *   - Current thinking is that this should just be mirrored. Meter.html and
+ *     Meter.js can live on a website for non-webflow usage.
+ *
+ */

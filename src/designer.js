@@ -1,5 +1,5 @@
 /**
- * GV EXTENSION | Content script
+ * GV EXTENSION | Designer content script
  *
  * Injects code for the publish menu, the carbon calculator, and the SVG compressor.
  */
@@ -20,27 +20,11 @@ function lookFor(lookClass, interval) {
     });
 }
 
-// LOGIN DIALOG ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// Wait for the react mount to be accessible
-lookFor('#designer-app-react-mount', 1000).then(injectDialog);
-
-function injectDialog(mount) {
-    // Inject HTML for settings panel
-    mount.insertAdjacentHTML('beforeEnd', '{{dialog.html}}');
-
-    const login = {
-        dialog: g('dialog'),
-        exit: g('exit'),
-        page1: g('page-1'),
-        page2: g('page-2'),
-        page3: g('page-3'),
-        login: g('login'),
-        username: g('username'),
-        password: g('password'),
-        close: closeMenu,
-    };
-}
+// Register custom events for when the site .zip file is downloaded,
+// when a user successfully logs in, and whenever files are successfully uploaded
+const gvDownloaded = new Event('gv-downloaded');
+const gvLogin = new Event('gv-login');
+const gvComplete = new Event('gv-complete');
 
 // SETTINGS PANEL ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -54,24 +38,122 @@ function injectPanel(sidebar) {
     const settings = {
         panel: g('panel'),
         panelButton: g('panel-button'),
-        close: g('close'),
+        exit: g('panel-exit'),
     };
 
     // Open the side panel
     settings.panelButton.addEventListener('click', (e) => {
-        e.preventDefault;
+        closeSidebarPanels(sidebar);
         settings.panel.classList.toggle('on');
         settings.panelButton.classList.toggle('on');
     });
 
     // Close the panel
-    sidebar.addEventListener('click', (e) => {
-        e.preventDefault;
-        if (e.target != settings.panelButton) {
+    settings.exit.addEventListener('click', (e) => {
+        settings.panel.classList.remove('on');
+        settings.panelButton.classList.remove('on');
+    });
+
+    sidebar.querySelectorAll('div.button').forEach((button) => {
+        button.addEventListener('click', () => {
             settings.panel.classList.remove('on');
             settings.panelButton.classList.remove('on');
+        });
+    });
+}
+
+function closeSidebarPanels(sidebar) {
+    sidebar.querySelectorAll('div.button').forEach((button) => {
+        if (button.classList.contains('active')) {
+            button.click();
         }
     });
+}
+
+// LOGIN DIALOG ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Wait for the react mount to be accessible
+lookFor('#panel', 1000).then(injectDialog);
+
+function injectDialog(mount) {
+    // Inject HTML for settings panel
+    g('designer-app-react-mount').insertAdjacentHTML(
+        'beforeEnd',
+        '{{dialog.html}}'
+    );
+
+    const login = {
+        dialog: g('dialog'),
+        dialogButton: g('dialog-button'),
+        exit: g('dialog-exit'),
+        page: {
+            one: g('dialog-page-1'),
+            two: g('dialog-page-2'),
+        },
+        loginButton: g('login'),
+        username: g('username'),
+        password: g('password'),
+        cancel: g('dialog-cancel'),
+        closeModal: closeModal,
+    };
+
+    login.dialogButton.addEventListener('click', (e) => {
+        e.preventDefault;
+        login.dialog.showModal();
+    });
+
+    // Handle login
+    login.loginButton.addEventListener('click', (e) => {
+        e.preventDefault;
+        sendLoginData(login.username.value, login.password.value);
+    });
+
+    document.addEventListener('keyup', (e) => {
+        e.preventDefault;
+        if (e.key === 'Enter' && login.dialog.open) {
+            e.preventDefault;
+            sendLoginData(login.username.value, login.password.value);
+        }
+    });
+
+    document.addEventListener('gv-login', (e) => {
+        login.page.one.classList.remove('on');
+        login.page.two.classList.add('on');
+    });
+
+    login.exit.addEventListener('click', (e) => {
+        login.closeModal();
+    });
+
+    login.cancel.addEventListener('click', (e) => {
+        login.closeModal();
+    });
+}
+
+// Method to close the UI, which is a bit more complicated than just css display=none/flex because of the animation
+function closeModal() {
+    this.dialog.classList.add('closing');
+    setTimeout(() => {
+        this.dialog.classList.remove('closing');
+        this.dialog.close();
+    }, 100);
+}
+
+// Sends the login data to the server and sets a loginState bool that affects resetMenu()
+function sendLoginData(u, p) {
+    let url = 'https://test.greenvision.media:5555/api/v1/login',
+        data = JSON.stringify({ username: u, password: p });
+    // Append both the file and the configuration data
+    fetch(url, {
+        method: 'POST',
+        body: data,
+    })
+        .then(() => {
+            document.dispatchEvent(pmLogin);
+        })
+        .catch((e) => {
+            console.log(e);
+        });
 }
 
 // PUBLISH MENU /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -84,15 +166,9 @@ function injectPanel(sidebar) {
  * straight back into an upload menu, all without ever leaving Webflow.
  *
  * Our backend service takes care of the rest, passing it straight to either the final release domain
- * or a staging domain, and making other changes according to the settings which are recorded by the publish
+ * or a staging domain, and making other changes according to the options, which are recorded by the publish
  * in this menu.
  */
-
-// Register custom events for when the site .zip file is downloaded,
-// when a user successfully logs in, and whenever files are successfully uploaded
-const pmDownloaded = new Event('publish-downloaded');
-const pmLogin = new Event('publish-login');
-const pmComplete = new Event('publish-complete');
 
 // Wait for the export button to appear in the DOM
 lookFor('[data-automation-id="top-bar-export-code-button"]', 1000).then(
@@ -107,11 +183,14 @@ function injectMenu(exportButton) {
     const publish = {
         menu: g('menu'),
         menuButton: g('menu-button'),
-        exit: g('exit'),
-        cancel: g('cancel'),
-        publish: g('publish'),
+        close: g('close'),
+        page: {
+            one: g('menu-page-1'),
+            two: g('menu-page-2'),
+        },
+        publishButton: g('publish'),
         subtitle: g('subtitle'),
-        settings: g('settings'),
+        options: g('options'),
         form: g('form'),
         save: g('save'),
         restart: g('restart'),
@@ -133,7 +212,6 @@ function injectMenu(exportButton) {
             loading: g('loading'),
             complete: g('complete'),
         },
-        close: closeMenu,
         reset: resetMenu,
         configure: configureMenu,
         setConfig: setConfigData,
@@ -149,54 +227,24 @@ function injectMenu(exportButton) {
     });
 
     // Close the menu
-    publish.exit.addEventListener('click', (e) => {
+    publish.close.addEventListener('click', (e) => {
         e.preventDefault;
-        publish.close();
-        publish.reset();
-    });
-
-    publish.cancel.addEventListener('click', (e) => {
-        e.preventDefault;
-        publish.close();
+        publish.menu.classList.remove('on');
         publish.reset();
     });
 
     document.addEventListener('keyup', (e) => {
         e.preventDefault;
         if (e.key === 'Escape') {
-            publish.close();
+            publish.menu.classList.remove('on');
             publish.reset();
         }
     });
 
-    // Handle login
-    // publish.login.addEventListener('click', (e) => {
-    //     e.preventDefault;
-    //     sendLoginData(publish.username.value, publish.password.value);
-    // });
-
-    // document.addEventListener('keyup', (e) => {
-    //     e.preventDefault;
-    //     if (e.key === 'Enter' && publish.page1.classList.contains('on')) {
-    //         e.preventDefault;
-    //         sendLoginData(publish.username.value, publish.password.value);
-    //     }
-    // });
-
-    // document.addEventListener('publish-login', (e) => {
-    //     publish.page1.classList.remove('on');
-    //     publish.page2.classList.add('on');
-    // });
-
-    publish.login.addEventListener('click', (e) => {
-        publish.page1.classList.remove('on');
-        publish.page2.classList.add('on');
-    });
-
     // Toggle advanced options
-    publish.settings.addEventListener('click', (e) => {
+    publish.options.addEventListener('click', (e) => {
         e.preventDefault;
-        publish.settings.classList.toggle('on');
+        publish.options.classList.toggle('on');
         publish.form.classList.toggle('on');
     });
 
@@ -248,15 +296,15 @@ function injectMenu(exportButton) {
     });
 
     // Hitting publish shows the drag and drop page with the loading wheel, and begins automating the download
-    publish.publish.addEventListener('click', (e) => {
-        publish.page2.classList.remove('on');
-        publish.page3.classList.add('on');
+    publish.publishButton.addEventListener('click', (e) => {
+        publish.page.one.classList.remove('on');
+        publish.page.two.classList.add('on');
 
         downloadId = automateDownload(exportButton);
     });
 
     // Alerts user that their file was downloaded and replaces the loading wheel with a file upload icon
-    document.addEventListener('publish-downloaded', () => {
+    document.addEventListener('gv-downloaded', () => {
         publish.icons.loading.classList.remove('on');
         publish.icons.file.classList.add('on');
         publish.uploadLabel.classList.add('on');
@@ -300,34 +348,18 @@ function injectMenu(exportButton) {
     });
 
     // Shows checkmark icon and link to published site. Congrats!! Ya did it
-    document.addEventListener('publish-complete', () => {
+    document.addEventListener('gv-complete', () => {
         publish.icons.loading.classList.remove('on');
         publish.icons.complete.classList.add('on');
         publish.dropText.classList.remove('on');
         publish.link.classList.add('on');
         deleteDownload();
     });
-    //////////////////////////////////////////////////DELETE/////////////////////////////////////////////////////////
-    publish.page1.addEventListener('drop', (e) => {
-        e.preventDefault;
-        // Sends data stored in drag-and-drop API
-        sendSiteData(e.dataTransfer.files[0]);
-    });
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-}
-
-// Method to close the UI, which is a bit more complicated than just css display=none/flex because of the animation
-function closeMenu() {
-    this.menu.classList.add('closing');
-    setTimeout(() => {
-        this.menu.classList.remove('closing');
-        this.menu.classList.remove('on');
-    }, 100);
 }
 
 // Function to reset the publish to the beginning state whenever user closes menu, and whenever Webflow is reloaded
 async function resetMenu() {
-    // Gets the stored values and inputs them into the menu settings
+    // Gets the stored values and inputs them into the menu options
     const configData = await chrome.storage.local.get([
         'PROJECT',
         'DOMAIN',
@@ -349,21 +381,15 @@ async function resetMenu() {
         this.inputs.release.classList.add('on');
     }
 
-    // Sets the publish back to page 1 if user is not logged in, to page 2 otherwise
-    if (configData.LOGIN_STATE === false) {
-        this.page1.classList.add('on');
-        this.page2.classList.remove('on');
-    } else {
-        this.page2.classList.add('on');
-        this.page1.classList.remove('on');
-    }
+    // Resets to page 1
+    this.page.one.classList.add('on');
+    this.page.two.classList.remove('on');
 
     // Resets the icons and undoes other various publish changes
-    this.page3.classList.remove('on');
     this.icons.file.classList.remove('on');
     this.icons.loading.classList.add('on');
     this.icons.complete.classList.remove('on');
-    this.settings.classList.remove('on');
+    this.options.classList.remove('on');
     this.form.classList.remove('on');
     this.link.classList.remove('on');
     this.dropText.classList.add('on');
@@ -371,7 +397,7 @@ async function resetMenu() {
     this.dropText.innerHTML = 'Downloading your files...';
 }
 
-// Ensures the advanced options publish is configured based on the current settings
+// Ensures the advanced options publish is configured based on the current options
 async function configureMenu() {
     // This sets the link at the top of the publish menu to be whichever URL your site will be published to, determined by the config settings
     // Also sets the link that appears at the end of the upload process
@@ -451,34 +477,20 @@ function setConfigData() {
 
     const projectString = window.location.pathname.split('/')[2]; // Gets WF project name from URL
     let scriptArray = this.inputs.scripts.value.split(', '); // Gets an array of script strings from comma + space delimited list
+    const projectKey = projectString.toUpperCase();
 
     chrome.storage.local
         .set({
-            PROJECT: projectString,
-            DOMAIN: this.inputs.domain.value,
-            SITE_CODE: this.inputs.siteCode.value,
-            SCRIPTS: scriptArray,
-            STAGING: stagingBool,
-            CONFIG_STATE: true,
+            projectKey: {
+                PROJECT: projectString,
+                DOMAIN: this.inputs.domain.value,
+                SITE_CODE: this.inputs.siteCode.value,
+                SCRIPTS: scriptArray,
+                STAGING: stagingBool,
+                CONFIG_STATE: true,
+            },
         })
         .then(this.configure());
-}
-
-// Sends the login data to the server and sets a loginState bool that affects resetMenu()
-function sendLoginData(u, p) {
-    let url = 'https://test.greenvision.media:5555/api/v1/login',
-        data = JSON.stringify({ username: u, password: p });
-    // Append both the file and the configuration data
-    fetch(url, {
-        method: 'POST',
-        body: data,
-    })
-        .then(() => {
-            document.dispatchEvent(pmComplete);
-        })
-        .catch((e) => {
-            console.log(e);
-        });
 }
 
 // Send .zip and config data to server
@@ -601,19 +613,17 @@ lookFor('[data-automation-id="preview-mode-button"]', 1000).then(injectMeter);
 
 function injectMeter(previewButton) {
     //Inject HTML for CO2 meter
-    previewButton.insertAdjacentHTML(
-        'afterEnd',
-        '<div class="gv-meter"><div><span id="meter">X.Xg </span><span>CO<sub>2</sub></span></div></div>'
-    );
+    previewButton.insertAdjacentHTML('afterEnd', '{{meter.html}}');
 
     // Set up a carbon meter object with the meter and a setCarbon method
     const carbon = {
         meter: g('meter'),
+        meterButton: g('meter-button'),
         setCarbon: setCarbonData,
     };
 
     // When using the GV publish menu, this custom event will fire. Use this to update the carbon meter
-    document.addEventListener('publish-downloaded', carbon.setCarbon());
+    document.addEventListener('gv-downloaded', carbon.setCarbon());
 }
 
 async function setCarbonData() {
@@ -622,7 +632,7 @@ async function setCarbonData() {
     let emissions = swd.perByte(configData.FILE_SIZE);
 
     // Update UI
-    this.meter.innerHTML = emissions.toPrecision(2) + 'g ';
+    this.meter.firstChild.innerHTML = emissions.toPrecision(2) + 'g ';
 }
 
 // MAGIC CLIPBOARD /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
