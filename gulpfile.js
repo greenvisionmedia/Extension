@@ -1,12 +1,11 @@
-var gulp = require('gulp'),
-    terser = require('gulp-terser'),
-    replace = require('gulp-replace'),
-    rename = require('gulp-rename'),
-    htmlmin = require('gulp-htmlmin'),
-    cssnano = require('gulp-cssnano'),
-    vinylPaths = require('vinyl-paths'),
-    fs = require('fs'),
-    del = require('del');
+import gulp from 'gulp';
+import terser from 'gulp-terser';
+import replace from 'gulp-replace';
+import rename from 'gulp-rename';
+import htmlmin from 'gulp-htmlmin';
+import cssnano from 'gulp-cssnano';
+import { deleteAsync } from 'del';
+import fs from 'fs';
 
 function markup() {
     return gulp
@@ -59,15 +58,15 @@ function scripts() {
     );
 }
 
-function static() {
+function port() {
     return gulp.src('./static/**').pipe(gulp.dest('./public'));
 }
 
 function clean() {
-    return gulp.src('./public/*.html').pipe(vinylPaths(del));
+    return deleteAsync('./public/*.html');
 }
 
-gulp.task('default', gulp.series(markup, styles, scripts, static, clean));
+gulp.task('default', gulp.series(markup, styles, scripts, port, clean));
 
 /**
  * To-do:
@@ -77,5 +76,4 @@ gulp.task('default', gulp.series(markup, styles, scripts, static, clean));
  *  - Write code for the carbon budget tool.
  *   - Current thinking is that this should just be mirrored. Meter.html and
  *     Meter.js can live on a website for non-webflow usage.
- *
  */
