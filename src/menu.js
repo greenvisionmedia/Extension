@@ -54,9 +54,9 @@ function injectMenu(exportButton) {
             loading: g('loading'),
             complete: g('complete'),
         },
-        reset: resetMenu,
-        configure: configureMenu,
-        setConfig: setConfigData,
+        reset,
+        configure,
+        setConfig,
     };
 
     publish.reset(); // Resets various publish state changes using stored chrome variables
@@ -200,7 +200,7 @@ function injectMenu(exportButton) {
 }
 
 // Function to reset the publish to the beginning state whenever user closes menu, and whenever Webflow is reloaded
-async function resetMenu() {
+async function reset() {
     // Gets the stored values and inputs them into the menu options
     const configData = await chrome.storage.local.get([
         'PROJECT',
@@ -240,7 +240,7 @@ async function resetMenu() {
 }
 
 // Ensures the advanced options publish is configured based on the current options
-async function configureMenu() {
+async function configure() {
     // This sets the link at the top of the publish menu to be whichever URL your site will be published to, determined by the config settings
     // Also sets the link that appears at the end of the upload process
     const configData = await chrome.storage.local.get([
@@ -308,7 +308,7 @@ async function configureMenu() {
 }
 
 // Write and store configuration data
-function setConfigData() {
+function setConfig() {
     // Reads the class on the fake radio buttons and sets a boolean accordingly
     let stagingBool = true;
     if (this.inputs.staging.classList.contains('on')) {

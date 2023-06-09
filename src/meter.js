@@ -20,18 +20,17 @@ function injectMeter(previewButton) {
     //Inject HTML for CO2 meter
     previewButton.insertAdjacentHTML('afterEnd', '{{meter.html}}');
 
-    // Set up a carbon meter object with the meter and a setCarbon method
     const carbon = {
         meter: g('meter'),
         meterButton: g('meter-button'),
-        setCarbon: setCarbonData,
+        setCarbon,
     };
 
     // When using the GV publish menu, this custom event will fire. Use this to update the carbon meter
     document.addEventListener('gv-downloaded', carbon.setCarbon());
 }
 
-async function setCarbonData() {
+async function setCarbon() {
     // Get download size from background script
     const configData = await chrome.storage.local.get('FILE_SIZE');
     let emissions = swd.perByte(configData.FILE_SIZE);

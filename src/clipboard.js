@@ -55,7 +55,7 @@ function injectCheckbox(HTMLEmbed) {
             SVGCheckbox: g('svg-checkbox'),
             MDCheckbox: g('md-checkbox'),
             URICheckbox: g('uri-checkbox'),
-            configure: configureCheckbox,
+            configure,
         };
 
         // Toggles a checkmark, and stores a local variable so these settings are persistant
@@ -67,6 +67,18 @@ function injectCheckbox(HTMLEmbed) {
             } else {
                 chrome.storage.local.set({
                     SVG_STATE: false,
+                });
+            }
+        });
+
+        mc.URICheckbox.addEventListener('click', () => {
+            if (mc.URICheckbox.checked) {
+                chrome.storage.local.set({
+                    URI_STATE: true,
+                });
+            } else {
+                chrome.storage.local.set({
+                    URI_STATE: false,
                 });
             }
         });
@@ -88,7 +100,7 @@ function injectCheckbox(HTMLEmbed) {
 
         // Initiate the clibpoard modifications on embed load, on clicking into the embed,
         // and on refocusing the window (helpful if the user clicks away to Illustrator then clicks back in)
-        // and on ctrl keyup (ctrl+a to select everything inside the HTMLEmbed)
+        // and on ctrl keyup (i.e. for ctrl+a when selecting everything inside the embed modal)
         modifyClipboard();
         HTMLEmbed.addEventListener('click', modifyClipboard);
         window.addEventListener('focus', () => {
@@ -107,7 +119,7 @@ function injectCheckbox(HTMLEmbed) {
     lookFor('.bem-EmbedEditor_Modal', 100).then(injectCheckbox);
 }
 
-async function configureCheckbox() {
+async function configure() {
     const configData = await chrome.storage.local.get([
         'SVG_STATE',
         'MD_STATE',
@@ -125,31 +137,28 @@ async function configureCheckbox() {
 }
 
 async function modifyClipboard() {
-    const text = await navigator.clipboard.readText();
+    const text = await navigator.clipboard.readText(),
+        configData = await chrome.storage.local.get([
+            'SVG_STATE',
+            'MD_STATE',
+            'URI_STATE',
+        ]);
     if (SVGPragma.test(text)) {
         // Checking config data to see if SVG compression is on
-        await chrome.storage.local.get(
-            ['SVG_STATE', 'URI_STATE'],
-            (configData) => {
-                if (configData.SVG_STATE) {
-                    // If so, compress and load that text to the clipboard
-                    const compressedSVG = compressSVG(text);
-                    navigator.clipboard.writeText(compressedSVG);
-                } else if (configData.URI_STATE) {
-                    const convertedSVG = convertSVG(text);
-                    navigator.clipboard.writeText(convertedSVG);
-                }
-            }
-        );
+        if (configData.SVG_STATE) {
+            // If so, compress and load that text to the clipboard
+            const compressedSVG = compressSVG(text);
+            navigator.clipboard.writeText(compressedSVG);
+        } else if (configData.URI_STATE) {
+            const convertedSVG = convertSVG(text);
+            navigator.clipboard.writeText(convertedSVG);
+        }
     }
     if (MDPragma.test(text)) {
-        // Likewise
-        await chrome.storage.local.get('MD_STATE', (configData) => {
-            if (configData.MD_STATE) {
-                const convertedMD = markdown(text.replace(MDPragma, ''));
-                navigator.clipboard.writeText(convertedMD);
-            }
-        });
+        if (configData.MD_STATE) {
+            const convertedMD = markdown(text.replace(MDPragma, ''));
+            navigator.clipboard.writeText(convertedMD);
+        }
     }
 }
 
@@ -172,6 +181,7 @@ function convertSVG(svg) {
     svg = svg.replace(/id=[\"\'](.{0,}?)[\"\'](?=[\s>])/g, '');
     svg = svg.replace(/class=[\"\'](.{0,}?)[\"\'](?=[\s>])/g, '');
     svg = svg.replace(/data-name=[\"\'](.{0,}?)[\"\'](?=[\s>])/g, '');
+    svg = svg.replace(/encoding=[\"\'](.{0,}?)[\"\'](?=[\s>])/g, '');
     // replace nested quotes
     svg = svg.replace(/"'(.{1,})'"/g, "'$1'");
     // replace double quotes
@@ -194,6 +204,9 @@ function convertSVG(svg) {
     return svg;
 }
 
+// This is a severe minification, removes everything but the essential path data including colors, kerning, strokes and stroke effects
+// Best for small icons or simple shapes (which are the best use-cases for inline SVG in Webflow)
+
 function compressSVG(svg) {
     svg = svg.trim();
     // remove xml, doctype, generator...
@@ -210,8 +223,9 @@ function compressSVG(svg) {
     svg = svg.replace(/id=[\"\'](.{0,}?)[\"\'](?=[\s>])/g, '');
     svg = svg.replace(/class=[\"\'](.{0,}?)[\"\'](?=[\s>])/g, '');
     svg = svg.replace(/data-name=[\"\'](.{0,}?)[\"\'](?=[\s>])/g, '');
-    svg = svg.replace(/data-name=[\"\'](.{0,}?)[\"\'](?=[\s>])/g, '');
+    svg = svg.replace(/encoding=[\"\'](.{0,}?)[\"\'](?=[\s>])/g, '');
     svg = svg.replace(/style=[\"\'](.{0,}?)[\"\'](?=[\s>])/g, '');
+    svg = svg.replace(/fill=[\"\'](.{0,}?)[\"\'](?=[\s>])/g, '');
 
     return svg;
 }
