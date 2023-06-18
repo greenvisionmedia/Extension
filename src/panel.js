@@ -7,29 +7,29 @@ function injectPanel(sidebar) {
     // Inject HTML for settings panel
     sidebar.insertAdjacentHTML('beforeEnd', '{{panel.html}}');
 
-    const settings = {
-        panel: g('panel'),
-        panelButton: g('panel-button'),
-        exit: g('panel-exit'),
+    const Panel = {
+        this: get('panel'),
+        button: get('panel-button'),
+        exit: get('panel-exit'),
     };
 
     // Open the side panel
-    settings.panelButton.addEventListener('click', (e) => {
+    Panel.button.addEventListener('click', (e) => {
         closeSidebarPanels(sidebar);
-        settings.panel.classList.toggle('on');
-        settings.panelButton.classList.toggle('on');
+        toggle(Panel.this);
+        toggle(Panel.button);
     });
 
     // Close the panel
-    settings.exit.addEventListener('click', (e) => {
-        settings.panel.classList.remove('on');
-        settings.panelButton.classList.remove('on');
+    Panel.exit.addEventListener('click', (e) => {
+        off(Panel.this);
+        off(Panel.button);
     });
 
     sidebar.querySelectorAll('div.button').forEach((button) => {
         button.addEventListener('click', () => {
-            settings.panel.classList.remove('on');
-            settings.panelButton.classList.remove('on');
+            off(Panel.this);
+            off(Panel.button);
         });
     });
 }

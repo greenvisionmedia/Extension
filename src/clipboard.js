@@ -23,7 +23,7 @@ lookFor('.bem-EmbedEditor_Modal', 100).then(injectCheckbox);
 // Starts clipboard modification when embed is opened, with the option to disable SVG conversion
 function injectCheckbox(HTMLEmbed) {
     // Inserts a checkbox to disable SVG compression
-    if (!g('svg-checkbox')) {
+    if (!get('svg-checkbox')) {
         // Get the parent element of the checkboxes
         const checkboxDiv = HTMLEmbed.querySelector(
             ' .bem-Modal_Body > form > div:nth-child(3) > div:first-child'
@@ -51,16 +51,16 @@ function injectCheckbox(HTMLEmbed) {
         );
 
         // Register a magic clipboard ui object with both checkboxes and a config method
-        const mc = {
-            SVGCheckbox: g('svg-checkbox'),
-            MDCheckbox: g('md-checkbox'),
-            URICheckbox: g('uri-checkbox'),
+        const Clipboard = {
+            SVGCheckbox: get('svg-checkbox'),
+            MDCheckbox: get('md-checkbox'),
+            URICheckbox: get('uri-checkbox'),
             configure,
         };
 
         // Toggles a checkmark, and stores a local variable so these settings are persistant
-        mc.SVGCheckbox.addEventListener('click', () => {
-            if (mc.SVGCheckbox.checked) {
+        Clipboard.SVGCheckbox.addEventListener('click', () => {
+            if (Clipboard.SVGCheckbox.checked) {
                 chrome.storage.local.set({
                     SVG_STATE: true,
                 });
@@ -71,8 +71,8 @@ function injectCheckbox(HTMLEmbed) {
             }
         });
 
-        mc.URICheckbox.addEventListener('click', () => {
-            if (mc.URICheckbox.checked) {
+        Clipboard.URICheckbox.addEventListener('click', () => {
+            if (Clipboard.URICheckbox.checked) {
                 chrome.storage.local.set({
                     URI_STATE: true,
                 });
@@ -83,8 +83,8 @@ function injectCheckbox(HTMLEmbed) {
             }
         });
 
-        mc.MDCheckbox.addEventListener('click', () => {
-            if (mc.MDCheckbox.checked) {
+        Clipboard.MDCheckbox.addEventListener('click', () => {
+            if (Clipboard.MDCheckbox.checked) {
                 chrome.storage.local.set({
                     MD_STATE: true,
                 });
@@ -96,7 +96,7 @@ function injectCheckbox(HTMLEmbed) {
         });
 
         // Load the correct state of the checkmark based on local config data
-        mc.configure();
+        Clipboard.configure();
 
         // Initiate the clibpoard modifications on embed load, on clicking into the embed,
         // and on refocusing the window (helpful if the user clicks away to Illustrator then clicks back in)
@@ -104,12 +104,12 @@ function injectCheckbox(HTMLEmbed) {
         modifyClipboard();
         HTMLEmbed.addEventListener('click', modifyClipboard);
         window.addEventListener('focus', () => {
-            if (g('svg-checkbox')) {
+            if (get('svg-checkbox')) {
                 modifyClipboard;
             }
         });
         document.addEventListener('keyup', (e) => {
-            if (e.key === 'Control' && g('svg-checkbox')) {
+            if (e.key === 'Control' && get('svg-checkbox')) {
                 modifyClipboard;
             }
         });

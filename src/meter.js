@@ -20,14 +20,14 @@ function injectMeter(previewButton) {
     //Inject HTML for CO2 meter
     previewButton.insertAdjacentHTML('afterEnd', '{{meter.html}}');
 
-    const carbon = {
-        meter: g('meter'),
-        meterButton: g('meter-button'),
+    const Meter = {
+        this: get('meter'),
+        button: get('meter-button'),
         setCarbon,
     };
 
     // When using the GV publish menu, this custom event will fire. Use this to update the carbon meter
-    document.addEventListener('gv-downloaded', carbon.setCarbon());
+    document.addEventListener('gv-downloaded', Meter.setCarbon());
 }
 
 async function setCarbon() {

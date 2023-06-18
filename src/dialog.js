@@ -5,61 +5,61 @@ lookFor('#panel', 1000).then(injectDialog);
 
 function injectDialog() {
     // Inject HTML for settings panel
-    g('designer-app-react-mount').insertAdjacentHTML(
+    get('designer-app-react-mount').insertAdjacentHTML(
         'beforeEnd',
         '{{dialog.html}}'
     );
 
-    const login = {
-        dialog: g('dialog'),
-        dialogButton: g('dialog-button'),
-        exit: g('dialog-exit'),
+    const Dialog = {
+        this: get('dialog'),
+        button: get('dialog-button'),
+        exit: get('dialog-exit'),
         page: {
-            one: g('dialog-page-1'),
-            two: g('dialog-page-2'),
+            one: get('dialog-page-1'),
+            two: get('dialog-page-2'),
         },
-        loginButton: g('login'),
-        username: g('username'),
-        password: g('password'),
-        cancel: g('dialog-cancel'),
-        closeModal: closeModal,
+        login: get('login'),
+        username: get('username'),
+        password: get('password'),
+        cancel: get('dialog-cancel'),
+        close,
     };
 
-    login.dialogButton.addEventListener('click', (e) => {
+    Dialog.button.addEventListener('click', (e) => {
         e.preventDefault;
-        login.dialog.showModal();
+        Dialog.this.showModal();
     });
 
     // Handle login
-    login.loginButton.addEventListener('click', (e) => {
+    Dialog.login.addEventListener('click', (e) => {
         e.preventDefault;
-        sendLoginData(login.username.value, login.password.value);
+        sendLoginData(Dialog.username.value, Dialog.password.value);
     });
 
     document.addEventListener('keyup', (e) => {
         e.preventDefault;
-        if (e.key === 'Enter' && login.dialog.open) {
+        if (e.key === 'Enter' && Dialog.this.open) {
             e.preventDefault;
-            sendLoginData(login.username.value, login.password.value);
+            sendLoginData(Dialog.username.value, Dialog.password.value);
         }
     });
 
     document.addEventListener('gv-login', (e) => {
-        login.page.one.classList.remove('on');
-        login.page.two.classList.add('on');
+        off(Dialog.page.one);
+        on(Dialog.page.two);
     });
 
-    login.exit.addEventListener('click', (e) => {
-        login.closeModal();
+    Dialog.exit.addEventListener('click', (e) => {
+        Dialog.close();
     });
 
-    login.cancel.addEventListener('click', (e) => {
-        login.closeModal();
+    Dialog.cancel.addEventListener('click', (e) => {
+        Dialog.close();
     });
 }
 
 // Method to close the UI, which is a bit more complicated than just css display=none/flex because of the animation
-function closeModal() {
+function close() {
     this.dialog.classList.add('closing');
     setTimeout(() => {
         this.dialog.classList.remove('closing');

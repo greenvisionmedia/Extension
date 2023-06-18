@@ -4,7 +4,7 @@
  * This speeds up the process of exporting code from Webflow and uploading it to the server.
  *
  * Rather than downloading the .zip, uncompressing it, uploading to github/udesly/netlify etc.,
- * you just hit publish. The zip gets downloaded automatically, at which point you can drag it
+ * you just hit Menu. The zip gets downloaded automatically, at which point you can drag it
  * straight back into an upload menu, all without ever leaving Webflow.
  *
  * Our backend service takes care of the rest, passing it straight to either the final release domain
@@ -22,179 +22,186 @@ function injectMenu(exportButton) {
     exportButton.insertAdjacentHTML('afterEnd', '{{menu.html}}');
 
     // Setup a publish menu object with all UI elements and methods for closing, configuring data and reseting
-    const publish = {
-        menu: g('menu'),
-        menuButton: g('menu-button'),
-        close: g('close'),
+    const Menu = {
+        this: get('menu'),
+        button: get('menu-button'),
+        close: get('close'),
         page: {
-            one: g('menu-page-1'),
-            two: g('menu-page-2'),
+            one: get('menu-page-1'),
+            two: get('menu-page-2'),
         },
-        publishButton: g('publish'),
-        subtitle: g('subtitle'),
-        options: g('options'),
-        form: g('form'),
-        save: g('save'),
-        restart: g('restart'),
-        site: g('site'),
+        publishButton: get('publish'),
+        subtitle: get('subtitle'),
+        options: get('options'),
+        form: get('form'),
+        save: get('save'),
+        restart: get('restart'),
+        site: get('site'),
         inputs: {
-            domain: g('domain'),
-            siteCode: g('site-code'),
-            release: g('release'),
-            staging: g('staging'),
-            scripts: g('scripts'),
+            domain: get('domain'),
+            siteCode: get('site-code'),
+            release: get('release'),
+            staging: get('staging'),
+            scripts: get('scripts'),
         },
-        dropArea: g('drop-area'),
-        dropText: g('drop-text'),
-        link: g('link'),
-        upload: g('upload'),
-        uploadLabel: g('upload-label'),
+        dropArea: get('drop-area'),
+        dropText: get('drop-text'),
+        link: get('link'),
+        upload: get('upload'),
+        uploadLabel: get('upload-label'),
         icons: {
-            file: g('file'),
-            loading: g('loading'),
-            complete: g('complete'),
+            file: get('file'),
+            loading: get('loading'),
+            complete: get('complete'),
         },
         reset,
         configure,
         setConfig,
     };
 
-    publish.reset(); // Resets various publish state changes using stored chrome variables
-    publish.configure(); // Sets the advanced options menu to the configured state
+    Menu.reset(); // Resets various publish state changes using stored chrome variables
+    Menu.configure(); // Sets the advanced options menu to the configured state
 
     // Open the menu
-    publish.menuButton.addEventListener('click', (e) => {
+    Menu.button.addEventListener('click', (e) => {
         e.preventDefault;
-        publish.menu.classList.add('on');
+        on(Menu.this);
     });
 
     // Close the menu
-    publish.close.addEventListener('click', (e) => {
+    Menu.close.addEventListener('click', (e) => {
         e.preventDefault;
-        publish.menu.classList.remove('on');
-        publish.reset();
+        off(Menu.this);
+        Menu.reset();
     });
 
     document.addEventListener('keyup', (e) => {
         e.preventDefault;
         if (e.key === 'Escape') {
-            publish.menu.classList.remove('on');
-            publish.reset();
+            off(Menu.this);
+            Menu.reset();
         }
     });
 
     // Toggle advanced options
-    publish.options.addEventListener('click', (e) => {
+    Menu.options.addEventListener('click', (e) => {
         e.preventDefault;
-        publish.options.classList.toggle('on');
-        publish.form.classList.toggle('on');
+        toggle(Menu.options);
+        toggle(Menu.form);
     });
 
     // These two buttons basically make up a 'radio button', only one should be on. I'll use which element has the "on" class to determine which is pressed.
-    publish.inputs.staging.addEventListener('click', (e) => {
+    Menu.inputs.staging.addEventListener('click', (e) => {
         e.preventDefault;
-        publish.inputs.release.classList.remove('on');
-        publish.inputs.staging.classList.add('on');
+        off(Menu.inputs.release);
+        on(Menu.inputs.staging);
     });
 
-    publish.inputs.release.addEventListener('click', (e) => {
+    Menu.inputs.release.addEventListener('click', (e) => {
         e.preventDefault;
-        publish.inputs.release.classList.add('on');
-        publish.inputs.staging.classList.remove('on');
+        on(Menu.inputs.release);
+        off(Menu.inputs.staging);
     });
 
     // Hitting save turns pointerevents off on the form inputs, shows a new 'restart' button where save was
-    publish.save.addEventListener('click', (e) => {
+    Menu.save.addEventListener('click', (e) => {
         e.preventDefault;
-        Object.values(publish.inputs).forEach((e) => {
+        Object.values(Menu.inputs).forEach((e) => {
             e.disabled = true;
         });
-        publish.save.classList.remove('on');
-        publish.restart.classList.add('on');
+        
+        off(Menu.save);
+        on(Menu.restart);
 
-        publish.setConfig(); //Updates configuration data in chrome storage/GUI
+        Menu.setConfig(); //Updates configuration data in chrome storage/GUI
     });
 
     // Hitting restart undoes the previous changes and allows access to the form again
-    publish.restart.addEventListener('click', (e) => {
+    Menu.restart.addEventListener('click', (e) => {
         e.preventDefault;
-        Object.values(publish.inputs).forEach((e) => {
+        Object.values(Menu.inputs).forEach((e) => {
             e.disabled = false;
         });
-        publish.save.classList.add('on');
-        publish.restart.classList.remove('on');
 
-        g('script-row').remove(); // Removes the fancy script publish
+        on(Menu.save);
+        off(Menu.restart);
+
+        get('script-row').remove(); // Removes the fancy script publish
     });
 
     // By default the restart button shows 'Configured'; hovering over the restart button shows the text 'Restart'
-    publish.restart.addEventListener('mouseenter', (e) => {
+    Menu.restart.addEventListener('mouseenter', (e) => {
         e.preventDefault;
-        publish.restart.innerHTML = 'Restart';
+        Menu.restart.innerHTML = 'Restart';
     });
-    publish.restart.addEventListener('mouseleave', (e) => {
+    Menu.restart.addEventListener('mouseleave', (e) => {
         e.preventDefault;
-        publish.restart.innerHTML = 'Configured';
+        Menu.restart.innerHTML = 'Configured';
     });
 
     // Hitting publish shows the drag and drop page with the loading wheel, and begins automating the download
-    publish.publishButton.addEventListener('click', (e) => {
-        publish.page.one.classList.remove('on');
-        publish.page.two.classList.add('on');
+    Menu.publishButton.addEventListener('click', (e) => {
+        off(Menu.page.one);
+        on(Menu.page.two);
 
         downloadId = automateDownload(exportButton);
     });
 
     // Alerts user that their file was downloaded and replaces the loading wheel with a file upload icon
     document.addEventListener('gv-downloaded', () => {
-        publish.icons.loading.classList.remove('on');
-        publish.icons.file.classList.add('on');
-        publish.uploadLabel.classList.add('on');
-        publish.dropText.innerHTML =
+        off(Menu.icons.loading);
+        on(Menu.icons.file);
+        on(Menu.uploadLabel);
+
+        Menu.dropText.innerHTML =
             'Drag your folder here, or click to upload';
     });
 
     // Dragging files over the drop area changes styles to alert the user; dropping the file sends a fetch request to the backend
-    publish.dropArea.addEventListener('dragenter', (e) => {
+    Menu.dropArea.addEventListener('dragenter', (e) => {
         e.preventDefault;
-        publish.dropArea.classList.add('on');
+        on(Menu.dropArea);
     });
-    publish.dropArea.addEventListener('dragover', (e) => {
+    Menu.dropArea.addEventListener('dragover', (e) => {
         e.preventDefault;
-        publish.dropArea.classList.add('on');
+        on(Menu.dropArea);
     });
-    publish.dropArea.addEventListener('dragleave', (e) => {
+    Menu.dropArea.addEventListener('dragleave', (e) => {
         e.preventDefault;
-        publish.dropArea.classList.remove('on');
+        off(Menu.dropArea);
     });
-    publish.dropArea.addEventListener('drop', (e) => {
+    Menu.dropArea.addEventListener('drop', (e) => {
         e.preventDefault;
         // Sends data stored in drag-and-drop API
         sendSiteData(e.dataTransfer.files[0]);
-        publish.icons.file.classList.remove('on');
-        publish.icons.loading.classList.add('on');
-        publish.uploadLabel.classList.remove('on');
-        publish.dropArea.classList.remove('on');
-        publish.dropText.innerHTML = 'Publishing your files...';
+
+        off(Menu.icons.file);
+        on(Menu.icons.loading);
+        off(Menu.uploadLabel);
+        off(Menu.dropArea);
+
+        Menu.dropText.innerHTML = 'Publishing your files...';
     });
 
     // Ads the ability to use the upload field as an input button, as an alternative to dragging and dropping
-    publish.upload.addEventListener('change', (e) => {
+    Menu.upload.addEventListener('change', (e) => {
         e.preventDefault;
         // Sends the .zip data
-        sendSiteData(publish.upload.files[0]);
-        publish.icons.file.classList.remove('on');
-        publish.icons.loading.classList.add('on');
-        publish.uploadLabel.classList.remove('on');
-        publish.dropText.innerHTML = 'Publishing your files...';
+        sendSiteData(Menu.upload.files[0]);
+
+        off(Menu.icons.file);
+        on(Menu.icons.loading);
+        off(Menu.uploadLabel);
+
+        Menu.dropText.innerHTML = 'Publishing your files...';
     });
 
     // Shows checkmark icon and link to published site. Congrats!! Ya did it
     document.addEventListener('gv-complete', () => {
-        publish.icons.loading.classList.remove('on');
-        publish.icons.complete.classList.add('on');
-        publish.dropText.classList.remove('on');
-        publish.link.classList.add('on');
+        off(Menu.icons.loading);
+        on(Menu.icons.complete);
+        off(Menu.dropText);
+        on(Menu.link);
         deleteDownload();
     });
 }
@@ -216,26 +223,26 @@ async function reset() {
     this.inputs.scripts.value = configData.SCRIPTS.join(', ');
 
     if (configData.STAGING) {
-        this.inputs.staging.classList.add('on');
-        this.inputs.release.classList.remove('on');
+        on(this.inputs.staging);
+        off(this.inputs.release);
     } else {
-        this.inputs.staging.classList.remove('on');
-        this.inputs.release.classList.add('on');
+        off(this.inputs.staging);
+        on(this.inputs.release);
     }
 
     // Resets to page 1
-    this.page.one.classList.add('on');
-    this.page.two.classList.remove('on');
+    on(this.page.one);
+    off(this.page.two);
 
     // Resets the icons and undoes other various publish changes
-    this.icons.file.classList.remove('on');
-    this.icons.loading.classList.add('on');
-    this.icons.complete.classList.remove('on');
-    this.options.classList.remove('on');
-    this.form.classList.remove('on');
-    this.link.classList.remove('on');
-    this.dropText.classList.add('on');
-    this.uploadLabel.classList.remove('on');
+    off(this.icons.file);
+    on(this.icons.loading);
+    off(this.icons.complete);
+    off(this.options);
+    off(this.form);
+    off(this.link);
+    on(this.dropText);
+    off(this.uploadLabel);
     this.dropText.innerHTML = 'Downloading your files...';
 }
 
@@ -255,15 +262,15 @@ async function configure() {
 
     if (configData.CONFIG_STATE) {
         // Allow publish button to be clicked
-        this.subtitle.classList.remove('on');
-        this.publish.classList.add('on');
+        off(this.subtitle);
+        on(this.publish);
         // Enter the existing config data
         this.inputs.domain.value = configData.DOMAIN;
         this.inputs.siteCode.value = configData.SITE_CODE;
         this.inputs.scripts.value = configData.SCRIPTS.join(', ');
         if (configData.STAGING) {
-            this.inputs.staging.classList.add('on');
-            this.inputs.release.classList.remove('on');
+            on(this.inputs.staging);
+            off(this.inputs.release);
             this.link.setAttribute(
                 'href',
                 `https:// ${configData.SITE_CODE}.greenvisionmedia.net`
@@ -275,8 +282,8 @@ async function configure() {
             this.site.querySelector('span').innerHTML =
                 configData.SITE_CODE + '.greenvisionmedia.net';
         } else {
-            this.inputs.staging.classList.remove('on');
-            this.inputs.release.classList.add('on');
+            off(this.inputs.staging);
+            on(this.inputs.release);
             this.link.setAttribute('href', `https:// ${configData.DOMAIN}`);
             this.site.setAttribute('href', `https:// ${configData.DOMAIN}`);
             this.site.querySelector('span').innerHTML = configData.DOMAIN;
@@ -302,8 +309,8 @@ async function configure() {
         Object.values(this.inputs).forEach((e) => {
             e.disabled = true;
         });
-        this.save.classList.remove('on');
-        this.restart.classList.add('on');
+        off(this.save);
+        on(this.restart);
     }
 }
 
@@ -317,9 +324,9 @@ function setConfig() {
         stagingBool = false;
     }
 
+    // Get the project name from the webflow designer url 
     const projectString = window.location.pathname.split('/')[2]; // Gets WF project name from URL
     let scriptArray = this.inputs.scripts.value.split(', '); // Gets an array of script strings from comma + space delimited list
-    const projectKey = projectString.toUpperCase();
 
     chrome.storage.local
         .set({

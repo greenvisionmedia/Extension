@@ -5,7 +5,12 @@
  */
 
 // Query shorthand
-const g = (i) => document.getElementById(i);
+const get = (i) => document.getElementById(i);
+
+// Class manipulation shorthands
+const on = (e) => e.classList.add('on');
+const off = (e) => e.classList.remove('on');
+const toggle = (e) => e.classList.toggle('on');
 
 // Wait for DOM elements to appear, avoids querying bits of the Webflow designer that haven't loaded yet
 function lookFor(lookClass, interval) {
@@ -19,6 +24,7 @@ function lookFor(lookClass, interval) {
         }, interval);
     });
 }
+
 
 // Register custom events for when the site .zip file is downloaded,
 // when a user successfully logs in, and whenever files are successfully uploaded
