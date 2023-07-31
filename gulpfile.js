@@ -51,4 +51,8 @@ function clean() {
     return gulp.src('./public/*.html').pipe(vinylPaths(del));
 }
 
-gulp.task('default', gulp.series(markup, styles, scripts, static, clean));
+function move() {
+    return gulp.src('./public/**/*').pipe(gulp.dest('/mnt/c/users/taj/desktop/projects/(GV) Chrome Extension/public/'));
+}
+
+gulp.task('default', gulp.series(markup, styles, scripts, static, clean, move));
