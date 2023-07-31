@@ -4,7 +4,7 @@ import replace from 'gulp-replace';
 import rename from 'gulp-rename';
 import htmlmin from 'gulp-htmlmin';
 import cssnano from 'gulp-cssnano';
-import { deleteAsync } from 'del';
+import clean from 'gulp-clean';
 import fs from 'fs';
 
 function markup() {
@@ -62,11 +62,17 @@ function port() {
     return gulp.src('./static/**').pipe(gulp.dest('./public'));
 }
 
-function clean() {
-    return deleteAsync('./public/*.html');
+function scrub() {
+    return gulp.src('./public/*.html').pipe(clean());
 }
 
-gulp.task('default', gulp.series(markup, styles, scripts, port, clean));
+// Copy the public folder into the filesystem
+
+function move() {
+    return gulp.src('./public/**/**').pipe(gulp.dest('~/mnt/c/users/taj/desktop/extension'));
+}
+
+gulp.task('default', gulp.series(markup, styles, scripts, port, scrub, move));
 
 /**
  * To-do:
