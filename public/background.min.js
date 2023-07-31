@@ -85,3 +85,15 @@ chrome.downloads.onCreated.addListener((item) => {
         FILE_SIZE: item.fileSize,
     });
 });
+
+// WEBSITE CHECKER ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Respond to content script with icon change if website is hosted green
+chrome.runtime.onMessage.addListener(function (request, sender) {
+    if (request.action === 'changeIconActive') {
+        chrome.action.setIcon({
+            tabId: sender.tab.id,
+            path: '/icons/icon-active-32.png',
+        });
+    }
+});
