@@ -17,197 +17,192 @@ lookFor('[data-automation-id="top-bar-export-code-button"]', 1000).then(
     injectMenu
 );
 
+// Get UI elements
+const menu =  get('menu'),
+    menuButton = get('menu-button'),
+    closeButton = get('close-button'),
+    page = {
+        one: get('menu-page-1'),
+        two: get('menu-page-2'),
+    },
+    site = get('site'),
+    subtitle = get('subtitle'),
+    publishButton = get('publish-button'),
+    optionsButton = get('options-button'),
+    optionsForm = get('options-form'),
+    saveButton = get('save-button'),
+    restartButton = get('restart-button'),
+    inputs = {
+        domain: get('domain'),
+        siteCode: get('site-code'),
+        release: get('release'),
+        staging: get('staging'),
+        scripts: get('scripts'),
+    },
+    dropArea = get('drop-area'),
+    dropText = get('drop-text'),
+    link = get('link'),
+    uploadArea = get('upload-area'),
+    uploadLabel = get('upload-label'),
+    icons = {
+        file: get('file'),
+        loading: get('loading'),
+        complete: get('complete'),
+    };
+
 function injectMenu(exportButton) {
     // Inject HTML for publish menu
     exportButton.insertAdjacentHTML('afterEnd', '{{menu.html}}');
 
-    // Setup a publish menu object with all UI elements and methods for closing, configuring data and reseting
-    const Menu = {
-        this: get('menu'),
-        button: get('menu-button'),
-        close: get('close'),
-        page: {
-            one: get('menu-page-1'),
-            two: get('menu-page-2'),
-        },
-        publishButton: get('publish'),
-        subtitle: get('subtitle'),
-        options: get('options'),
-        form: get('form'),
-        save: get('save'),
-        restart: get('restart'),
-        site: get('site'),
-        inputs: {
-            domain: get('domain'),
-            siteCode: get('site-code'),
-            release: get('release'),
-            staging: get('staging'),
-            scripts: get('scripts'),
-        },
-        dropArea: get('drop-area'),
-        dropText: get('drop-text'),
-        link: get('link'),
-        upload: get('upload'),
-        uploadLabel: get('upload-label'),
-        icons: {
-            file: get('file'),
-            loading: get('loading'),
-            complete: get('complete'),
-        },
-        reset,
-        configure,
-        setConfig,
-    };
-
-    Menu.reset(); // Resets various publish state changes using stored chrome variables
-    Menu.configure(); // Sets the advanced options menu to the configured state
+    resetMenu(); // Resets various publish state changes using stored chrome variables
+    configureMenu(); // Sets the advanced options menu to the configured state
 
     // Open the menu
-    Menu.button.addEventListener('click', (e) => {
+    menuButton.addEventListener('click', (e) => {
         e.preventDefault;
-        on(Menu.this);
+        on(menu);
     });
 
     // Close the menu
-    Menu.close.addEventListener('click', (e) => {
+    closeButton.addEventListener('click', (e) => {
         e.preventDefault;
-        off(Menu.this);
-        Menu.reset();
+        off(menu);
+        resetMenu();
     });
 
     document.addEventListener('keyup', (e) => {
         e.preventDefault;
         if (e.key === 'Escape') {
-            off(Menu.this);
-            Menu.reset();
+            off(menu);
+            resetMenu();
         }
     });
 
     // Toggle advanced options
-    Menu.options.addEventListener('click', (e) => {
+    optionsButton.addEventListener('click', (e) => {
         e.preventDefault;
-        toggle(Menu.options);
-        toggle(Menu.form);
+        toggle(optionsButton);
+        toggle(optionsForm);
     });
 
     // These two buttons basically make up a 'radio button', only one should be on. I'll use which element has the "on" class to determine which is pressed.
-    Menu.inputs.staging.addEventListener('click', (e) => {
+    inputs.staging.addEventListener('click', (e) => {
         e.preventDefault;
-        off(Menu.inputs.release);
-        on(Menu.inputs.staging);
+        off(inputs.release);
+        on(inputs.staging);
     });
 
-    Menu.inputs.release.addEventListener('click', (e) => {
+    inputs.release.addEventListener('click', (e) => {
         e.preventDefault;
-        on(Menu.inputs.release);
-        off(Menu.inputs.staging);
+        on(inputs.release);
+        off(inputs.staging);
     });
 
     // Hitting save turns pointerevents off on the form inputs, shows a new 'restart' button where save was
-    Menu.save.addEventListener('click', (e) => {
+    saveButton.addEventListener('click', (e) => {
         e.preventDefault;
-        Object.values(Menu.inputs).forEach((e) => {
+        Object.values(inputs).forEach((e) => {
             e.disabled = true;
         });
         
-        off(Menu.save);
-        on(Menu.restart);
+        off(saveButton);
+        on(restartButton);
 
-        Menu.setConfig(); //Updates configuration data in chrome storage/GUI
+        setConfig(); //Updates configuration data in chrome storage/GUI
     });
 
     // Hitting restart undoes the previous changes and allows access to the form again
-    Menu.restart.addEventListener('click', (e) => {
+    restartButton.addEventListener('click', (e) => {
         e.preventDefault;
-        Object.values(Menu.inputs).forEach((e) => {
+        Object.values(inputs).forEach((e) => {
             e.disabled = false;
         });
 
-        on(Menu.save);
-        off(Menu.restart);
+        on(saveButton);
+        off(restartButton);
 
         get('script-row').remove(); // Removes the fancy script publish
     });
 
     // By default the restart button shows 'Configured'; hovering over the restart button shows the text 'Restart'
-    Menu.restart.addEventListener('mouseenter', (e) => {
+    restartButton.addEventListener('mouseenter', (e) => {
         e.preventDefault;
-        Menu.restart.innerHTML = 'Restart';
+        restart.innerHTML = 'Restart';
     });
-    Menu.restart.addEventListener('mouseleave', (e) => {
+    restartButton.addEventListener('mouseleave', (e) => {
         e.preventDefault;
-        Menu.restart.innerHTML = 'Configured';
+        restart.innerHTML = 'Configured';
     });
 
     // Hitting publish shows the drag and drop page with the loading wheel, and begins automating the download
-    Menu.publishButton.addEventListener('click', (e) => {
-        off(Menu.page.one);
-        on(Menu.page.two);
+    publishButton.addEventListener('click', (e) => {
+        off(page.one);
+        on(page.two);
 
         downloadId = automateDownload(exportButton);
     });
 
     // Alerts user that their file was downloaded and replaces the loading wheel with a file upload icon
     document.addEventListener('gv-downloaded', () => {
-        off(Menu.icons.loading);
-        on(Menu.icons.file);
-        on(Menu.uploadLabel);
+        off(icons.loading);
+        on(icons.file);
+        on(uploadLabel);
 
-        Menu.dropText.innerHTML =
+        dropText.innerHTML =
             'Drag your folder here, or click to upload';
     });
 
     // Dragging files over the drop area changes styles to alert the user; dropping the file sends a fetch request to the backend
-    Menu.dropArea.addEventListener('dragenter', (e) => {
+    dropArea.addEventListener('dragenter', (e) => {
         e.preventDefault;
-        on(Menu.dropArea);
+        on(dropArea);
     });
-    Menu.dropArea.addEventListener('dragover', (e) => {
+    dropArea.addEventListener('dragover', (e) => {
         e.preventDefault;
-        on(Menu.dropArea);
+        on(dropArea);
     });
-    Menu.dropArea.addEventListener('dragleave', (e) => {
+    dropArea.addEventListener('dragleave', (e) => {
         e.preventDefault;
-        off(Menu.dropArea);
+        off(dropArea);
     });
-    Menu.dropArea.addEventListener('drop', (e) => {
+    dropArea.addEventListener('drop', (e) => {
         e.preventDefault;
         // Sends data stored in drag-and-drop API
         sendSiteData(e.dataTransfer.files[0]);
 
-        off(Menu.icons.file);
-        on(Menu.icons.loading);
-        off(Menu.uploadLabel);
-        off(Menu.dropArea);
+        off(icons.file);
+        on(icons.loading);
+        off(uploadLabel);
+        off(dropArea);
 
-        Menu.dropText.innerHTML = 'Publishing your files...';
+        dropText.innerHTML = 'Publishing your files...';
     });
 
     // Ads the ability to use the upload field as an input button, as an alternative to dragging and dropping
-    Menu.upload.addEventListener('change', (e) => {
+    upload.addEventListener('change', (e) => {
         e.preventDefault;
         // Sends the .zip data
-        sendSiteData(Menu.upload.files[0]);
+        sendSiteData(upload.files[0]);
 
-        off(Menu.icons.file);
-        on(Menu.icons.loading);
-        off(Menu.uploadLabel);
+        off(icons.file);
+        on(icons.loading);
+        off(uploadLabel);
 
-        Menu.dropText.innerHTML = 'Publishing your files...';
+        dropText.innerHTML = 'Publishing your files...';
     });
 
     // Shows checkmark icon and link to published site. Congrats!! Ya did it
     document.addEventListener('gv-complete', () => {
-        off(Menu.icons.loading);
-        on(Menu.icons.complete);
-        off(Menu.dropText);
-        on(Menu.link);
+        off(icons.loading);
+        on(icons.complete);
+        off(dropText);
+        on(link);
         deleteDownload();
     });
 }
 
 // Function to reset the publish to the beginning state whenever user closes menu, and whenever Webflow is reloaded
-async function reset() {
+async function resetMenu() {
     // Gets the stored values and inputs them into the menu options
     const configData = await chrome.storage.local.get([
         'PROJECT',
@@ -218,36 +213,36 @@ async function reset() {
         'LOGIN_STATE',
     ]);
 
-    this.inputs.domain.value = configData.DOMAIN;
-    this.inputs.siteCode.value = configData.SITE_CODE;
-    this.inputs.scripts.value = configData.SCRIPTS.join(', ');
+    inputs.domain.value = configData.DOMAIN;
+    inputs.siteCode.value = configData.SITE_CODE;
+    inputs.scripts.value = configData.SCRIPTS.join(', ');
 
     if (configData.STAGING) {
-        on(this.inputs.staging);
-        off(this.inputs.release);
+        on(inputs.staging);
+        off(inputs.release);
     } else {
-        off(this.inputs.staging);
-        on(this.inputs.release);
+        off(inputs.staging);
+        on(inputs.release);
     }
 
     // Resets to page 1
-    on(this.page.one);
-    off(this.page.two);
+    on(page.one);
+    off(page.two);
 
     // Resets the icons and undoes other various publish changes
-    off(this.icons.file);
-    on(this.icons.loading);
-    off(this.icons.complete);
-    off(this.options);
-    off(this.form);
-    off(this.link);
-    on(this.dropText);
-    off(this.uploadLabel);
-    this.dropText.innerHTML = 'Downloading your files...';
+    off(icons.file);
+    on(icons.loading);
+    off(icons.complete);
+    off(optionsButton);
+    off(optionsForm);
+    off(link);
+    on(dropText);
+    off(uploadLabel);
+    dropText.innerHTML = 'Downloading your files...';
 }
 
 // Ensures the advanced options publish is configured based on the current options
-async function configure() {
+async function configureMenu() {
     // This sets the link at the top of the publish menu to be whichever URL your site will be published to, determined by the config settings
     // Also sets the link that appears at the end of the upload process
     const configData = await chrome.storage.local.get([
@@ -262,31 +257,31 @@ async function configure() {
 
     if (configData.CONFIG_STATE) {
         // Allow publish button to be clicked
-        off(this.subtitle);
-        on(this.publish);
+        off(subtitle);
+        on(publishButton);
         // Enter the existing config data
-        this.inputs.domain.value = configData.DOMAIN;
-        this.inputs.siteCode.value = configData.SITE_CODE;
-        this.inputs.scripts.value = configData.SCRIPTS.join(', ');
+        inputs.domain.value = configData.DOMAIN;
+        inputs.siteCode.value = configData.SITE_CODE;
+        inputs.scripts.value = configData.SCRIPTS.join(', ');
         if (configData.STAGING) {
-            on(this.inputs.staging);
-            off(this.inputs.release);
-            this.link.setAttribute(
+            on(inputs.staging);
+            off(inputs.release);
+            link.setAttribute(
                 'href',
                 `https:// ${configData.SITE_CODE}.greenvisionmedia.net`
             );
-            this.site.setAttribute(
+            site.setAttribute(
                 'href',
                 `https:// ${configData.SITE_CODE}.greenvisionmedia.net`
             );
-            this.site.querySelector('span').innerHTML =
+            site.querySelector('span').innerHTML =
                 configData.SITE_CODE + '.greenvisionmedia.net';
         } else {
-            off(this.inputs.staging);
-            on(this.inputs.release);
-            this.link.setAttribute('href', `https:// ${configData.DOMAIN}`);
-            this.site.setAttribute('href', `https:// ${configData.DOMAIN}`);
-            this.site.querySelector('span').innerHTML = configData.DOMAIN;
+            off(inputs.staging);
+            on(inputs.release);
+            link.setAttribute('href', `https:// ${configData.DOMAIN}`);
+            site.setAttribute('href', `https:// ${configData.DOMAIN}`);
+            site.querySelector('span').innerHTML = configData.DOMAIN;
         }
 
         // This is some code I wrote to give nice styles to the list of scripts, reminiscent of Webflow's class adder publish
@@ -298,7 +293,7 @@ async function configure() {
         scriptRow.classList.add('publish-text');
 
         // Adds the scripts
-        this.inputs.scripts.insertAdjacentElement('afterend', scriptRow);
+        inputs.scripts.insertAdjacentElement('afterend', scriptRow);
         for (script of configData.SCRIPTS) {
             //Wraps each script in a span for a nice green box
             let scriptSpan = document.createElement('span');
@@ -306,11 +301,11 @@ async function configure() {
             scriptRow.appendChild(scriptSpan);
         }
         // Disable inputs
-        Object.values(this.inputs).forEach((e) => {
+        Object.values(inputs).forEach((e) => {
             e.disabled = true;
         });
-        off(this.save);
-        on(this.restart);
+        off(saveButton);
+        on(restartButton);
     }
 }
 
@@ -318,7 +313,7 @@ async function configure() {
 function setConfig() {
     // Reads the class on the fake radio buttons and sets a boolean accordingly
     let stagingBool = true;
-    if (this.inputs.staging.classList.contains('on')) {
+    if (inputs.staging.classList.contains('on')) {
         stagingBool = true;
     } else {
         stagingBool = false;
@@ -326,20 +321,20 @@ function setConfig() {
 
     // Get the project name from the webflow designer url 
     const projectString = window.location.pathname.split('/')[2]; // Gets WF project name from URL
-    let scriptArray = this.inputs.scripts.value.split(', '); // Gets an array of script strings from comma + space delimited list
+    let scriptArray = inputs.scripts.value.split(', '); // Gets an array of script strings from comma + space delimited list
 
     chrome.storage.local
         .set({
             projectKey: {
                 PROJECT: projectString,
-                DOMAIN: this.inputs.domain.value,
-                SITE_CODE: this.inputs.siteCode.value,
+                DOMAIN: inputs.domain.value,
+                SITE_CODE: inputs.siteCode.value,
                 SCRIPTS: scriptArray,
                 STAGING: stagingBool,
                 CONFIG_STATE: true,
             },
         })
-        .then(this.configure());
+        .then(configureMenu());
 }
 
 // Send .zip and config data to server
