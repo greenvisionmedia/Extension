@@ -4,8 +4,6 @@
  * Primarily used to take advantage of the chrome.downloads API
  */
 
-// PUBLISH MODAL ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 // Set configuration defaults (in SCREAMING_SNAKE)
 chrome.runtime.onInstalled.addListener(() => {
     chrome.storage.local.set({
@@ -76,24 +74,3 @@ function dateFormat(inputDate, format) {
 
     return format;
 }
-
-// CARBON METER ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// Store download size for use by carbon meter
-chrome.downloads.onCreated.addListener((item) => {
-    chrome.storage.local.set({
-        FILE_SIZE: item.fileSize,
-    });
-});
-
-// WEBSITE CHECKER ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// Respond to content script with icon change if website is hosted green
-chrome.runtime.onMessage.addListener(function (request, sender) {
-    if (request.action === 'changeIconActive') {
-        chrome.action.setIcon({
-            tabId: sender.tab.id,
-            path: '/icons/icon-active-32.png',
-        });
-    }
-});

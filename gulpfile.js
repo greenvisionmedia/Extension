@@ -38,21 +38,6 @@ function scripts() {
                     return `${fs.readFileSync('./public/menu.html', 'utf8')}`;
                 })
             )
-            .pipe(
-                replace('{{panel.html}}', () => {
-                    return `${fs.readFileSync('./public/panel.html', 'utf8')}`;
-                })
-            )
-            .pipe(
-                replace('{{dialog.html}}', () => {
-                    return `${fs.readFileSync('./public/dialog.html', 'utf8')}`;
-                })
-            )
-            .pipe(
-                replace('{{meter.html}}', () => {
-                    return `${fs.readFileSync('./public/meter.html', 'utf8')}`;
-                })
-            )
             .pipe(rename({ suffix: '.min' }))
             .pipe(gulp.dest('./public'))
     );
@@ -66,10 +51,10 @@ function scrub() {
     return gulp.src('./public/*.html').pipe(clean());
 }
 
-// Copy the public folder into the filesystem
+// Copy the public folder into the windows filesystem
 
 function move() {
-    return gulp.src('./public/**/**').pipe(gulp.dest('~/mnt/c/users/taj/desktop/extension'));
+    return gulp.src('./public/**/*').pipe(gulp.dest('/mnt/c/users/taj/desktop/projects/(GV) Chrome Extension/public-update/'));
 }
 
 gulp.task('default', gulp.series(markup, styles, scripts, port, scrub, move));
