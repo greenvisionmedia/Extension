@@ -203,7 +203,14 @@ function injectMenu(exportButton) {
 
 // Function to reset the publish to the beginning state whenever user closes menu, and whenever Webflow is reloaded
 async function resetMenu() {
-    // Gets the stored values and inputs them into the menu options
+    // Reset to page 1
+    on(page.one);
+    off(page.two);
+
+    // Reset options menu
+    off(optionsButton);
+    off(optionsForm);
+    
     const configData = await chrome.storage.local.get([
         'PROJECT',
         'DOMAIN',
@@ -223,18 +230,13 @@ async function resetMenu() {
     } else {
         off(inputs.staging);
         on(inputs.release);
-    }
+    }    
 
-    // Resets to page 1
-    on(page.one);
-    off(page.two);
-
-    // Resets the icons and undoes other various publish changes
+    // Reset file drop elements
     off(icons.file);
     on(icons.loading);
     off(icons.complete);
-    off(optionsButton);
-    off(optionsForm);
+
     off(link);
     on(dropText);
     off(uploadLabel);
