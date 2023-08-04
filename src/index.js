@@ -25,6 +25,25 @@ function lookFor(lookClass, interval) {
     });
 }
 
+// Exit the user interface element if user hits escape or clicks outside the element/element button
+function addExitListeners(button, element) {
+    document.addEventListener('keyup', function escapeHandler(e) {
+        e.preventDefault;
+        if (e.key === 'Escape') {
+            off(element);
+            off(button);
+            document.removeEventListener('keyup', escapeHandler);
+        }
+    });
+    document.addEventListener('click', function clickHandler(e) {
+        if (e.target === button || element.contains(e.target)) {
+        } else if (e.isTrusted) {
+            off(element);
+            off(button);
+            document.removeEventListener('click', clickHandler);
+        }
+    });
+}
 
 // Register custom events for when the site .zip file is downloaded,
 // when a user successfully logs in, and whenever files are successfully uploaded
