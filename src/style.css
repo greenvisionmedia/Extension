@@ -306,43 +306,43 @@
     border-radius: 0 2px 2px 0;
 }
 
-#publish {
+#publish-button {
     margin-left: 0.5rem;
     width: 100%;
 }
 
-#publish:hover {
+#publish-button:hover {
     background-color: var(--green-350) !important;
 }
 
-#publish:active {
+#publish-button:active {
     background-color: var(--green-400) !important;
 }
 
-#save {
+#save-button {
     margin-left: 0.5rem;
 }
 
-#save,
-#restart {
+#save-button,
+#restart-button {
     background-color: var(--blue-400);
 }
 
-#save:hover,
-#restart:hover {
+#save-button:hover,
+#restart-button:hover {
     background-color: var(--blue-350);
 }
 
-#save:active,
-#restart:active {
+#save-button:active,
+#restart-button:active {
     background-color: var(--blue-400);
 }
 
-#form {
+#options-form {
     appearance: none;
 }
 
-#form input:disabled {
+#options-form input:disabled {
     border-color: #2b2b2b;
     background: #333;
     pointer-events: none;

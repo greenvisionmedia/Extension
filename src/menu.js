@@ -17,8 +17,13 @@ lookFor('[data-automation-id="top-bar-export-code-button"]', 1000).then(
     injectMenu
 );
 
-// Get UI elements
-const menu =  get('menu'),
+function injectMenu(exportButton) {
+
+    // Inject HTML for publish menu
+    exportButton.insertAdjacentHTML('afterEnd', '{{menu.html}}');
+    
+    // Get UI elements
+    const menu =  get('menu'),
     menuButton = get('menu-button'),
     closeButton = get('close-button'),
     page = {
@@ -30,8 +35,6 @@ const menu =  get('menu'),
     publishButton = get('publish-button'),
     optionsButton = get('options-button'),
     optionsForm = get('options-form'),
-    saveButton = get('save-button'),
-    restartButton = get('restart-button'),
     inputs = {
         domain: get('domain'),
         siteCode: get('site-code'),
@@ -39,10 +42,12 @@ const menu =  get('menu'),
         staging: get('staging'),
         scripts: get('scripts'),
     },
+    saveButton = get('save-button'),
+    restartButton = get('restart-button'),
     dropArea = get('drop-area'),
     dropText = get('drop-text'),
     link = get('link'),
-    uploadArea = get('upload-area'),
+    upload = get('upload'),
     uploadLabel = get('upload-label'),
     icons = {
         file: get('file'),
@@ -50,9 +55,215 @@ const menu =  get('menu'),
         complete: get('complete'),
     };
 
-function injectMenu(exportButton) {
-    // Inject HTML for publish menu
-    exportButton.insertAdjacentHTML('afterEnd', '{{menu.html}}');
+    // Function to reset the publish to the beginning state whenever user closes menu, and whenever Webflow is reloaded
+    async function resetMenu() {
+        // Reset to page 1
+        on(page.one);
+        off(page.two);
+
+        // Reset options menu
+        off(optionsButton);
+        off(optionsForm);
+        
+        const configData = await chrome.storage.local.get([
+            'PROJECT',
+            'DOMAIN',
+            'SITE_CODE',
+            'STAGING',
+            'SCRIPTS',
+            'LOGIN_STATE',
+        ]);
+
+        inputs.domain.value = configData.DOMAIN;
+        inputs.siteCode.value = configData.SITE_CODE;
+        inputs.scripts.value = configData.SCRIPTS.join(', ');
+
+        if (configData.STAGING) {
+            on(inputs.staging);
+            off(inputs.release);
+        } else {
+            off(inputs.staging);
+            on(inputs.release);
+        }    
+
+        // Reset file drop elements
+        off(icons.file);
+        on(icons.loading);
+        off(icons.complete);
+
+        off(link);
+        on(dropText);
+        off(uploadLabel);
+        dropText.innerHTML = 'Downloading your files...';
+    }
+
+    // Ensures the advanced options publish is configured based on the current options
+    async function configureMenu() {
+        // This sets the link at the top of the publish menu to be whichever URL your site will be published to, determined by the config settings
+        // Also sets the link that appears at the end of the upload process
+        const configData = await chrome.storage.local.get([
+            'PROJECT',
+            'DOMAIN',
+            'SITE_CODE',
+            'STAGING',
+            'SCRIPTS',
+            'CONFIG_STATE',
+            'LOGIN_STATE',
+        ]);
+
+        if (configData.CONFIG_STATE) {
+            // Allow publish button to be clicked
+            off(subtitle);
+            on(publishButton);
+            // Enter the existing config data
+            inputs.domain.value = configData.DOMAIN;
+            inputs.siteCode.value = configData.SITE_CODE;
+            inputs.scripts.value = configData.SCRIPTS.join(', ');
+            if (configData.STAGING) {
+                on(inputs.staging);
+                off(inputs.release);
+                link.setAttribute(
+                    'href',
+                    `https:// ${configData.SITE_CODE}.greenvisionmedia.net`
+                );
+                site.setAttribute(
+                    'href',
+                    `https:// ${configData.SITE_CODE}.greenvisionmedia.net`
+                );
+                site.querySelector('span').innerHTML =
+                    configData.SITE_CODE + '.greenvisionmedia.net';
+            } else {
+                off(inputs.staging);
+                on(inputs.release);
+                link.setAttribute('href', `https:// ${configData.DOMAIN}`);
+                site.setAttribute('href', `https:// ${configData.DOMAIN}`);
+                site.querySelector('span').innerHTML = configData.DOMAIN;
+            }
+
+            // This is some code I wrote to give nice styles to the list of scripts, reminiscent of Webflow's class adder publish
+            // Pretty much useless, but makes it more obvious which scripts are going to be added and looks cool
+
+            // Adds a new div that sits on top of the existing script input element
+            const scriptRow = document.createElement('div');
+            scriptRow.id = 'script-row';
+
+            // Adds the scripts
+            inputs.scripts.insertAdjacentElement('afterend', scriptRow);
+            for (script of configData.SCRIPTS) {
+                //Wraps each script in a span for a nice green box
+                let scriptSpan = document.createElement('span');
+                scriptSpan.innerHTML = script;
+                scriptRow.appendChild(scriptSpan);
+            }
+            // Disable inputs
+            Object.values(inputs).forEach((e) => {
+                e.disabled = true;
+            });
+            off(saveButton);
+            on(restartButton);
+        }
+    }
+        
+    // Write and store configuration data
+    function setConfig() {
+        // Reads the class on the fake radio buttons and sets a boolean accordingly
+        let stagingBool = true;
+        if (inputs.staging.classList.contains('on')) {
+            stagingBool = true;
+        } else {
+            stagingBool = false;
+        }
+
+        // Get the project name from the webflow designer url 
+        const projectString = window.location.pathname.split('/')[2]; // Gets WF project name from URL
+        let scriptArray = inputs.scripts.value.split(', '); // Gets an array of script strings from comma + space delimited list
+
+        chrome.storage.local
+            .set({
+                projectKey: {
+                    PROJECT: projectString,
+                    DOMAIN: inputs.domain.value,
+                    SITE_CODE: inputs.siteCode.value,
+                    SCRIPTS: scriptArray,
+                    STAGING: stagingBool,
+                    CONFIG_STATE: true,
+                },
+            })
+            .then(configureMenu());
+    }
+
+    // Send .zip and config data to server
+    async function sendSiteData(file) {
+        await chrome.storage.local.set({
+            DATE_TIME: dateFormat(Date.now(), 'MM-dd-yyyy-hh-mm'),
+        });
+        const configData = await chrome.storage.local.get([
+            'PROJECT',
+            'DOMAIN',
+            'SITE_CODE',
+            'STAGING',
+            'SCRIPTS',
+            'FILE_SIZE',
+            'DATE_TIME',
+        ]);
+        let configUrl = 'https://test.greenvision.media:5555/api/v1/config';
+        // Append both the file and the configuration data
+        fetch(configUrl, {
+            method: 'POST',
+            body: JSON.stringify(configData),
+            headers: {
+                'Content-type': 'application/json; charset=UTF-8',
+            },
+        });
+        let siteUrl = 'https://test.greenvision.media:5555/api/v1/publish',
+            siteForm = new FormData();
+        //siteForm.innerHTML = '<input type="file" name="keyname"/>';
+        siteForm.append('keyname', file);
+        fetch(siteUrl, {
+            method: 'POST',
+            body: siteForm,
+        });
+    }
+
+    async function automateDownload(exportButton) {
+        // Automates the normal user download process using queries and .click()
+        const buttonRowSelector =
+            'div[style="display: flex; justify-content: space-between; flex: 0 1 auto;"]';
+        const exportModalSelector =
+            'div[style^="opacity: 1; position: fixed; background-color: rgba(0, 0, 0, 0.8)"]';
+
+        exportButton.click();
+        const exportModal = await lookFor(exportModalSelector);
+        exportModal.style.display = 'none';
+        const zipButton = await lookFor(
+            buttonRowSelector + ' button:nth-child(4)',
+            10
+        );
+        zipButton.click();
+        const downloadButton = await lookFor(
+            buttonRowSelector + ' a[href^="blob:"]',
+            10
+        );
+        // Get the blob URL of the zip file the href attribute of the download button
+        let downloadURL = downloadButton.href;
+        // Exit the download modal
+        document.querySelector(buttonRowSelector + ' button:nth-child(3)').click();
+        // Open a port with the background script, so that we can use the download API
+        let downloadPort = chrome.runtime.connect({ name: 'download-port' });
+        downloadPort.postMessage({ url: downloadURL });
+        downloadPort.onMessage.addListener(() => {
+            document.dispatchEvent(pmDownloaded);
+            downloadPort.disconnect();
+        });
+    }
+
+    function deleteDownload() {
+        let deletePort = chrome.runtime.connect({ name: 'delete-port' });
+        deletePort.postMessage({ delete: true });
+        deletePort.onMessage.addListener(() => {
+            deletePort.disconnect();
+        });
+    }
 
     resetMenu(); // Resets various publish state changes using stored chrome variables
     configureMenu(); // Sets the advanced options menu to the configured state
@@ -127,11 +338,11 @@ function injectMenu(exportButton) {
     // By default the restart button shows 'Configured'; hovering over the restart button shows the text 'Restart'
     restartButton.addEventListener('mouseenter', (e) => {
         e.preventDefault;
-        restart.innerHTML = 'Restart';
+        restartButton.innerHTML = 'Restart';
     });
     restartButton.addEventListener('mouseleave', (e) => {
         e.preventDefault;
-        restart.innerHTML = 'Configured';
+        restartButton.innerHTML = 'Configured';
     });
 
     // Hitting publish shows the drag and drop page with the loading wheel, and begins automating the download
@@ -198,216 +409,5 @@ function injectMenu(exportButton) {
         off(dropText);
         on(link);
         deleteDownload();
-    });
-}
-
-// Function to reset the publish to the beginning state whenever user closes menu, and whenever Webflow is reloaded
-async function resetMenu() {
-    // Reset to page 1
-    on(page.one);
-    off(page.two);
-
-    // Reset options menu
-    off(optionsButton);
-    off(optionsForm);
-    
-    const configData = await chrome.storage.local.get([
-        'PROJECT',
-        'DOMAIN',
-        'SITE_CODE',
-        'STAGING',
-        'SCRIPTS',
-        'LOGIN_STATE',
-    ]);
-
-    inputs.domain.value = configData.DOMAIN;
-    inputs.siteCode.value = configData.SITE_CODE;
-    inputs.scripts.value = configData.SCRIPTS.join(', ');
-
-    if (configData.STAGING) {
-        on(inputs.staging);
-        off(inputs.release);
-    } else {
-        off(inputs.staging);
-        on(inputs.release);
-    }    
-
-    // Reset file drop elements
-    off(icons.file);
-    on(icons.loading);
-    off(icons.complete);
-
-    off(link);
-    on(dropText);
-    off(uploadLabel);
-    dropText.innerHTML = 'Downloading your files...';
-}
-
-// Ensures the advanced options publish is configured based on the current options
-async function configureMenu() {
-    // This sets the link at the top of the publish menu to be whichever URL your site will be published to, determined by the config settings
-    // Also sets the link that appears at the end of the upload process
-    const configData = await chrome.storage.local.get([
-        'PROJECT',
-        'DOMAIN',
-        'SITE_CODE',
-        'STAGING',
-        'SCRIPTS',
-        'CONFIG_STATE',
-        'LOGIN_STATE',
-    ]);
-
-    if (configData.CONFIG_STATE) {
-        // Allow publish button to be clicked
-        off(subtitle);
-        on(publishButton);
-        // Enter the existing config data
-        inputs.domain.value = configData.DOMAIN;
-        inputs.siteCode.value = configData.SITE_CODE;
-        inputs.scripts.value = configData.SCRIPTS.join(', ');
-        if (configData.STAGING) {
-            on(inputs.staging);
-            off(inputs.release);
-            link.setAttribute(
-                'href',
-                `https:// ${configData.SITE_CODE}.greenvisionmedia.net`
-            );
-            site.setAttribute(
-                'href',
-                `https:// ${configData.SITE_CODE}.greenvisionmedia.net`
-            );
-            site.querySelector('span').innerHTML =
-                configData.SITE_CODE + '.greenvisionmedia.net';
-        } else {
-            off(inputs.staging);
-            on(inputs.release);
-            link.setAttribute('href', `https:// ${configData.DOMAIN}`);
-            site.setAttribute('href', `https:// ${configData.DOMAIN}`);
-            site.querySelector('span').innerHTML = configData.DOMAIN;
-        }
-
-        // This is some code I wrote to give nice styles to the list of scripts, reminiscent of Webflow's class adder publish
-        // Pretty much useless, but makes it more obvious which scripts are going to be added and looks cool
-
-        // Adds a new div that sits on top of the existing script input element
-        const scriptRow = document.createElement('div');
-        scriptRow.id = 'script-row';
-        scriptRow.classList.add('publish-text');
-
-        // Adds the scripts
-        inputs.scripts.insertAdjacentElement('afterend', scriptRow);
-        for (script of configData.SCRIPTS) {
-            //Wraps each script in a span for a nice green box
-            let scriptSpan = document.createElement('span');
-            scriptSpan.innerHTML = script;
-            scriptRow.appendChild(scriptSpan);
-        }
-        // Disable inputs
-        Object.values(inputs).forEach((e) => {
-            e.disabled = true;
-        });
-        off(saveButton);
-        on(restartButton);
-    }
-}
-
-// Write and store configuration data
-function setConfig() {
-    // Reads the class on the fake radio buttons and sets a boolean accordingly
-    let stagingBool = true;
-    if (inputs.staging.classList.contains('on')) {
-        stagingBool = true;
-    } else {
-        stagingBool = false;
-    }
-
-    // Get the project name from the webflow designer url 
-    const projectString = window.location.pathname.split('/')[2]; // Gets WF project name from URL
-    let scriptArray = inputs.scripts.value.split(', '); // Gets an array of script strings from comma + space delimited list
-
-    chrome.storage.local
-        .set({
-            projectKey: {
-                PROJECT: projectString,
-                DOMAIN: inputs.domain.value,
-                SITE_CODE: inputs.siteCode.value,
-                SCRIPTS: scriptArray,
-                STAGING: stagingBool,
-                CONFIG_STATE: true,
-            },
-        })
-        .then(configureMenu());
-}
-
-// Send .zip and config data to server
-async function sendSiteData(file) {
-    await chrome.storage.local.set({
-        DATE_TIME: dateFormat(Date.now(), 'MM-dd-yyyy-hh-mm'),
-    });
-    const configData = await chrome.storage.local.get([
-        'PROJECT',
-        'DOMAIN',
-        'SITE_CODE',
-        'STAGING',
-        'SCRIPTS',
-        'FILE_SIZE',
-        'DATE_TIME',
-    ]);
-    let configUrl = 'https://test.greenvision.media:5555/api/v1/config';
-    // Append both the file and the configuration data
-    fetch(configUrl, {
-        method: 'POST',
-        body: JSON.stringify(configData),
-        headers: {
-            'Content-type': 'application/json; charset=UTF-8',
-        },
-    });
-    let siteUrl = 'https://test.greenvision.media:5555/api/v1/publish',
-        siteForm = new FormData();
-    //siteForm.innerHTML = '<input type="file" name="keyname"/>';
-    siteForm.append('keyname', file);
-    fetch(siteUrl, {
-        method: 'POST',
-        body: siteForm,
-    });
-}
-
-async function automateDownload(exportButton) {
-    // Automates the normal user download process using queries and .click()
-    const buttonRowSelector =
-        'div[style="display: flex; justify-content: space-between; flex: 0 1 auto;"]';
-    const exportModalSelector =
-        'div[style^="opacity: 1; position: fixed; background-color: rgba(0, 0, 0, 0.8)"]';
-
-    exportButton.click();
-    const exportModal = await lookFor(exportModalSelector);
-    exportModal.style.display = 'none';
-    const zipButton = await lookFor(
-        buttonRowSelector + ' button:nth-child(4)',
-        10
-    );
-    zipButton.click();
-    const downloadButton = await lookFor(
-        buttonRowSelector + ' a[href^="blob:"]',
-        10
-    );
-    // Get the blob URL of the zip file the href attribute of the download button
-    let downloadURL = downloadButton.href;
-    // Exit the download modal
-    document.querySelector(buttonRowSelector + ' button:nth-child(3)').click();
-    // Open a port with the background script, so that we can use the download API
-    let downloadPort = chrome.runtime.connect({ name: 'download-port' });
-    downloadPort.postMessage({ url: downloadURL });
-    downloadPort.onMessage.addListener(() => {
-        document.dispatchEvent(pmDownloaded);
-        downloadPort.disconnect();
-    });
-}
-
-function deleteDownload() {
-    let deletePort = chrome.runtime.connect({ name: 'delete-port' });
-    deletePort.postMessage({ delete: true });
-    deletePort.onMessage.addListener(() => {
-        deletePort.disconnect();
     });
 }
