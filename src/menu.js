@@ -14,49 +14,47 @@
 
 // Wait for the export button to appear in the DOM
 lookFor('[data-automation-id="top-bar-export-code-button"]', 1000).then(
-    injectMenu
+    injectMenu,
 );
 
 function injectMenu(exportButton) {
-
     // Inject HTML for publish menu
     exportButton.insertAdjacentHTML('afterEnd', '{{menu.html}}');
-    
+
     // Get UI elements
-    const menu =  get('menu'),
-    menuButton = get('menu-button'),
-    closeButton = get('close-button'),
-    page = {
-        one: get('menu-page-1'),
-        two: get('menu-page-2'),
-    },
-    site = get('site'),
-    subtitle = get('subtitle'),
-    publishButton = get('publish-button'),
-    optionsButton = get('options-button'),
-    optionsForm = get('options-form'),
-    inputs = {
-        domain: get('domain'),
-        siteCode: get('site-code'),
-        release: get('release'),
-        staging: get('staging'),
-        scripts: get('scripts'),
-    },
-    saveButton = get('save-button'),
-    restartButton = get('restart-button'),
-    dropArea = get('drop-area'),
-    dropText = get('drop-text'),
-    link = get('link'),
-    upload = get('upload'),
-    uploadLabel = get('upload-label'),
-    icons = {
-        file: get('file'),
-        loading: get('loading'),
-        complete: get('complete'),
-    };
+    const menu = get('menu'),
+        menuButton = get('menu-button'),
+        closeButton = get('close-button'),
+        page = {
+            one: get('menu-page-1'),
+            two: get('menu-page-2'),
+        },
+        site = get('site'),
+        publishButton = get('publish-button'),
+        optionsButton = get('options-button'),
+        optionsForm = get('options-form'),
+        inputs = {
+            domain: get('domain'),
+            siteCode: get('site-code'),
+            release: get('release'),
+            staging: get('staging'),
+            scripts: get('scripts'),
+        },
+        saveButton = get('save-button'),
+        restartButton = get('restart-button'),
+        dropArea = get('drop-area'),
+        dropText = get('drop-text'),
+        link = get('link'),
+        upload = get('upload'),
+        uploadLabel = get('upload-label'),
+        icons = {
+            file: get('file'),
+            loading: get('loading'),
+            complete: get('complete'),
+        };
 
     // Function to reset the publish to the beginning state whenever user closes menu, and whenever Webflow is reloaded
-    async function resetMenu() {
+    async function resetMenuState() {
         // Reset to page 1
         on(page.one);
         off(page.two);
@@ -64,7 +62,7 @@ function injectMenu(exportButton) {
         // Reset options menu
         off(optionsButton);
         off(optionsForm);
-        
+
         const configData = await chrome.storage.local.get([
             'PROJECT',
             'DOMAIN',
@@ -84,7 +82,7 @@ function injectMenu(exportButton) {
         } else {
             off(inputs.staging);
             on(inputs.release);
-        }    
+        }
 
         // Reset file drop elements
         off(icons.file);
@@ -95,6 +93,32 @@ function injectMenu(exportButton) {
         on(dropText);
         off(uploadLabel);
         dropText.innerHTML = 'Downloading your files...';
+    }
+
+    // Write and store configuration data
+    async function storeConfigData() {
+        // Reads the class on the fake radio buttons and sets a boolean accordingly
+        let stagingBool = true;
+        if (inputs.staging.classList.contains('on')) {
+            stagingBool = true;
+        } else {
+            stagingBool = false;
+        }
+
+        // Get the project name from the webflow designer url
+        const projectString = window.location.pathname.split('/')[2]; // Gets WF project name from URL
+        let scriptArray = inputs.scripts.value.split(', '); // Gets an array of script strings from comma + space delimited list
+
+        chrome.storage.local.set({
+            projectKey: {
+                PROJECT: projectString,
+                DOMAIN: inputs.domain.value,
+                SITE_CODE: inputs.siteCode.value,
+                SCRIPTS: scriptArray,
+                STAGING: stagingBool,
+                CONFIG_STATE: true,
+            },
+        });
     }
 
     // Ensures the advanced options publish is configured based on the current options
@@ -112,9 +136,6 @@ function injectMenu(exportButton) {
         ]);
 
         if (configData.CONFIG_STATE) {
-            // Allow publish button to be clicked
-            off(subtitle);
-            on(publishButton);
             // Enter the existing config data
             inputs.domain.value = configData.DOMAIN;
             inputs.siteCode.value = configData.SITE_CODE;
@@ -124,37 +145,38 @@ function injectMenu(exportButton) {
                 off(inputs.release);
                 link.setAttribute(
                     'href',
-                    `https:// ${configData.SITE_CODE}.greenvisionmedia.net`
+                    `https:// ${configData.SITE_CODE}.greenvisionmedia.net`,
                 );
                 site.setAttribute(
                     'href',
-                    `https:// ${configData.SITE_CODE}.greenvisionmedia.net`
+                    `https:// ${configData.SITE_CODE}.greenvisionmedia.net`,
                 );
                 site.querySelector('span').innerHTML =
                     configData.SITE_CODE + '.greenvisionmedia.net';
             } else {
                 off(inputs.staging);
                 on(inputs.release);
-                link.setAttribute('href', `https:// ${configData.DOMAIN}`);
-                site.setAttribute('href', `https:// ${configData.DOMAIN}`);
+                link.setAttribute('href', `https://${configData.DOMAIN}`);
+                site.setAttribute('href', `https://${configData.DOMAIN}`);
                 site.querySelector('span').innerHTML = configData.DOMAIN;
             }
 
-            // This is some code I wrote to give nice styles to the list of scripts, reminiscent of Webflow's class adder publish
-            // Pretty much useless, but makes it more obvious which scripts are going to be added and looks cool
+            // // This is some code I wrote to give nice styles to the list of scripts, reminiscent of Webflow's class adder publish
+            // // Pretty much useless, but makes it more obvious which scripts are going to be added and looks cool
 
-            // Adds a new div that sits on top of the existing script input element
-            const scriptRow = document.createElement('div');
-            scriptRow.id = 'script-row';
+            // // Adds a new div that sits on top of the existing script input element
+            // const scriptRow = document.createElement('div');
+            // scriptRow.id = 'script-row';
 
-            // Adds the scripts
-            inputs.scripts.insertAdjacentElement('afterend', scriptRow);
-            for (script of configData.SCRIPTS) {
-                //Wraps each script in a span for a nice green box
-                let scriptSpan = document.createElement('span');
-                scriptSpan.innerHTML = script;
-                scriptRow.appendChild(scriptSpan);
-            }
+            // // Adds the scripts
+            // inputs.scripts.insertAdjacentElement('afterend', scriptRow);
+            // for (script of configData.SCRIPTS) {
+            //     //Wraps each script in a span for a nice green box
+            //     let scriptSpan = document.createElement('span');
+            //     scriptSpan.innerHTML = script;
+            //     scriptRow.appendChild(scriptSpan);
+            // }
+
             // Disable inputs
             Object.values(inputs).forEach((e) => {
                 e.disabled = true;
@@ -162,34 +184,6 @@ function injectMenu(exportButton) {
             off(saveButton);
             on(restartButton);
         }
-    }
-        
-    // Write and store configuration data
-    function setConfig() {
-        // Reads the class on the fake radio buttons and sets a boolean accordingly
-        let stagingBool = true;
-        if (inputs.staging.classList.contains('on')) {
-            stagingBool = true;
-        } else {
-            stagingBool = false;
-        }
-
-        // Get the project name from the webflow designer url 
-        const projectString = window.location.pathname.split('/')[2]; // Gets WF project name from URL
-        let scriptArray = inputs.scripts.value.split(', '); // Gets an array of script strings from comma + space delimited list
-
-        chrome.storage.local
-            .set({
-                projectKey: {
-                    PROJECT: projectString,
-                    DOMAIN: inputs.domain.value,
-                    SITE_CODE: inputs.siteCode.value,
-                    SCRIPTS: scriptArray,
-                    STAGING: stagingBool,
-                    CONFIG_STATE: true,
-                },
-            })
-            .then(configureMenu());
     }
 
     // Send .zip and config data to server
@@ -237,17 +231,19 @@ function injectMenu(exportButton) {
         exportModal.style.display = 'none';
         const zipButton = await lookFor(
             buttonRowSelector + ' button:nth-child(4)',
-            10
+            10,
         );
         zipButton.click();
         const downloadButton = await lookFor(
             buttonRowSelector + ' a[href^="blob:"]',
-            10
+            10,
         );
         // Get the blob URL of the zip file the href attribute of the download button
         let downloadURL = downloadButton.href;
         // Exit the download modal
-        document.querySelector(buttonRowSelector + ' button:nth-child(3)').click();
+        document
+            .querySelector(buttonRowSelector + ' button:nth-child(3)')
+            .click();
         // Open a port with the background script, so that we can use the download API
         let downloadPort = chrome.runtime.connect({ name: 'download-port' });
         downloadPort.postMessage({ url: downloadURL });
@@ -265,28 +261,24 @@ function injectMenu(exportButton) {
         });
     }
 
-    resetMenu(); // Resets various publish state changes using stored chrome variables
+    resetMenuState(); // Resets various publish state changes using stored chrome variables
     configureMenu(); // Sets the advanced options menu to the configured state
 
-    // Open the menu
+    // Open/close the menu
     menuButton.addEventListener('click', (e) => {
         e.preventDefault;
-        on(menu);
+        toggle(menu);
+        toggle(menuButton);
+        resetMenuState();
+        if (menu.classList.contains('on')) {
+            addExitListeners(menuButton, menu);
+        }
     });
 
-    // Close the menu
     closeButton.addEventListener('click', (e) => {
         e.preventDefault;
         off(menu);
-        resetMenu();
-    });
-
-    document.addEventListener('keyup', (e) => {
-        e.preventDefault;
-        if (e.key === 'Escape') {
-            off(menu);
-            resetMenu();
-        }
+        off(menuButton);
     });
 
     // Toggle advanced options
@@ -296,7 +288,7 @@ function injectMenu(exportButton) {
         toggle(optionsForm);
     });
 
-    // These two buttons basically make up a 'radio button', only one should be on. I'll use which element has the "on" class to determine which is pressed.
+    // These two buttons basically make up a 'radio button', only one should be on.
     inputs.staging.addEventListener('click', (e) => {
         e.preventDefault;
         off(inputs.release);
@@ -310,16 +302,19 @@ function injectMenu(exportButton) {
     });
 
     // Hitting save turns pointerevents off on the form inputs, shows a new 'restart' button where save was
-    saveButton.addEventListener('click', (e) => {
+    saveButton.addEventListener('click', async (e) => {
         e.preventDefault;
         Object.values(inputs).forEach((e) => {
             e.disabled = true;
         });
-        
+
         off(saveButton);
         on(restartButton);
 
-        setConfig(); //Updates configuration data in chrome storage/GUI
+        on(publishButton);
+
+        await storeConfigData(); //Updates configuration data in chrome storage/GUI
+        configureMenu();
     });
 
     // Hitting restart undoes the previous changes and allows access to the form again
@@ -332,7 +327,7 @@ function injectMenu(exportButton) {
         on(saveButton);
         off(restartButton);
 
-        get('script-row').remove(); // Removes the fancy script publish
+        // get('script-row').remove(); // Removes the fancy script publish
     });
 
     // By default the restart button shows 'Configured'; hovering over the restart button shows the text 'Restart'
@@ -359,8 +354,7 @@ function injectMenu(exportButton) {
         on(icons.file);
         on(uploadLabel);
 
-        dropText.innerHTML =
-            'Drag your folder here, or click to upload';
+        dropText.innerHTML = 'Drag your folder here, or click to upload';
     });
 
     // Dragging files over the drop area changes styles to alert the user; dropping the file sends a fetch request to the backend

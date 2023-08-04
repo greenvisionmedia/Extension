@@ -69,16 +69,20 @@
     align-items: center;
     border-left: 1px solid var(--gray-800) !important;
     padding: 0px 9px 0px 9px;
+    transition: background-color 200ms ease-in;
 }
 
 #menu-button span {
     cursor: default;
     padding-left: 6px;
     color: var(--gray-200);
+    pointer-events: none;
+    user-select: none;
 }
 
 #menu-button svg {
     fill: var(--gray-200);
+    pointer-events: none;
 }
 
 #menu-button:hover {
@@ -91,7 +95,7 @@
 }
 
 #menu-button.on {
-    background-color: var(--gray-900);
+    background-color: var(--gray-800);
     color: white;
 }
 
