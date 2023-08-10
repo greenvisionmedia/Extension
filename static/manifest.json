@@ -22,7 +22,7 @@
                 "panel.min.js",
                 "clipboard.min.js"
             ],
-            "css": ["stylesheet.min.css"]
+            "css": ["style.min.css"]
         },
         {
             "matches": ["https://*/*"],
