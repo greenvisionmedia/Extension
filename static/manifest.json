@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
-    "name": "Pusherman",
-    "description": "Aint I clean bad machine super cool super mean",
+    "name": "GV Publish",
+    "description": "Publish your webflow site to servers running on renewable energy. ",
     "version": "0.1",
     "icons": {
         "16": "/icons/icon16.png",
@@ -13,12 +13,10 @@
         {
             "matches": ["https://webflow.com/design/*"],
             "js": [
-                "bcrypt.min.js",
-                "drawdown.min.js",
-                "co2.min.js",
-                "content.min.js"
+                "index.min.js",
+                "menu.min.js"
             ],
-            "css": ["stylesheet.min.css"]
+            "css": ["style.min.css"]
         }
     ],
     "background": {
