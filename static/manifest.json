@@ -12,17 +12,8 @@
     "content_scripts": [
         {
             "matches": ["https://webflow.com/design/*"],
-            "js": [
-                "bcrypt.min.js",
-                "drawdown.min.js",
-                "co2.min.js",
-                "index.min.js",
-                "meter.min.js",
-                "menu.min.js",
-                "panel.min.js",
-                "clipboard.min.js"
-            ],
-            "css": ["stylesheet.min.css"]
+            "js": ["index.min.js", "menu.min.js"],
+            "css": ["styles.min.css"]
         },
         {
             "matches": ["https://*/*"],
