@@ -13,30 +13,14 @@
         {
             "matches": ["https://webflow.com/design/*"],
             "js": [
-                "bcrypt.min.js",
                 "drawdown.min.js",
-                "co2.min.js",
                 "index.min.js",
-                "meter.min.js",
                 "menu.min.js",
-                "panel.min.js",
                 "clipboard.min.js"
             ],
-            "css": ["stylesheet.min.css"]
-        },
-        {
-            "matches": ["https://*/*"],
-            "js": ["checker.js"]
+            "css": ["style.min.css"]
         }
     ],
-    "action": {
-        "default_icon": {
-            "16": "/icons/icon-deactive-16.png",
-            "32": "/icons/icon-deactive-32.png",
-            "48": "/icons/icon-deactive-48.png",
-            "128": "/icons/icon-deactive-128.png"
-        }
-    },
     "background": {
         "service_worker": "background.min.js"
     },
