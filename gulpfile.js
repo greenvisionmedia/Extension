@@ -68,8 +68,15 @@ function scrub() {
 
 // Copy the public folder into the filesystem
 
+
 function move() {
-    return gulp.src('./public/**/**').pipe(gulp.dest('~/mnt/c/users/taj/desktop/extension'));
+    return gulp
+        .src('./public/**/*')
+        .pipe(
+            gulp.dest(
+                '/mnt/c/users/taj/desktop/projects/(GV) Chrome Extension/public-website-checker/',
+            ),
+        );
 }
 
 gulp.task('default', gulp.series(markup, styles, scripts, port, scrub, move));
