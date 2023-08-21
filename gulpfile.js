@@ -52,17 +52,6 @@ function scrub() {
 }
 
 // Copy the public folder into the windows filesystem
-
-function move() {
-    return gulp
-        .src('./public/**/*')
-        .pipe(
-            gulp.dest(
-                '/mnt/c/users/taj/desktop/projects/(GV) Chrome Extension/public-update/',
-            ),
-        );
-}
-
 function move() {
     return gulp
         .src('./public/**/*')
@@ -73,4 +62,4 @@ function move() {
         );
 }
 
-gulp.task('default', gulp.series(markup, styles, scripts, static, clean, move));
+gulp.task('default', gulp.series(markup, styles, scripts, port, scrub, move));
