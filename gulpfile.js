@@ -56,9 +56,7 @@ function move() {
     return gulp
         .src('./public/**/*')
         .pipe(
-            gulp.dest(
-                '/mnt/c/users/taj/desktop/projects/(GV) Chrome Extension/public/',
-            ),
+            gulp.dest('/mnt/c/users/taj/Desktop/Areas/Chrome Extension/public'),
         );
 }
 
