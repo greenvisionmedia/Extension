@@ -69,7 +69,13 @@ function scrub() {
 // Copy the public folder into the filesystem
 
 function move() {
-    return gulp.src('./public/**/**').pipe(gulp.dest('~/mnt/c/users/taj/desktop/extension'));
+    return gulp
+        .src('./public/**/*')
+        .pipe(
+            gulp.dest(
+                '/mnt/c/users/taj/Desktop/Areas/Chrome Extension/public-clipboard',
+            ),
+        );
 }
 
 gulp.task('default', gulp.series(markup, styles, scripts, port, scrub, move));
