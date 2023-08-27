@@ -34,24 +34,17 @@ function scripts() {
             //     })
             // )
             .pipe(
-                replace('{{menu.html}}', () => {
-                    return `${fs.readFileSync('./public/menu.html', 'utf8')}`;
-                })
-            )
-            .pipe(
-                replace('{{panel.html}}', () => {
-                    return `${fs.readFileSync('./public/panel.html', 'utf8')}`;
-                })
-            )
-            .pipe(
-                replace('{{dialog.html}}', () => {
-                    return `${fs.readFileSync('./public/dialog.html', 'utf8')}`;
-                })
+                replace('{{clipboard.html}}', () => {
+                    return `${fs.readFileSync(
+                        './public/clipboard.html',
+                        'utf8',
+                    )}`;
+                }),
             )
             .pipe(
                 replace('{{meter.html}}', () => {
                     return `${fs.readFileSync('./public/meter.html', 'utf8')}`;
-                })
+                }),
             )
             .pipe(rename({ suffix: '.min' }))
             .pipe(gulp.dest('./public'))

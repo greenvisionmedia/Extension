@@ -34,21 +34,7 @@ function injectCheckbox(HTMLEmbed) {
         checkboxDiv.style.gap = '2rem';
 
         // Inject the checkboxes and the associated markup
-        checkboxDiv.insertAdjacentHTML(
-            'beforeEnd',
-            `<label class="publish-checkbox-label">
-                <input id="md-checkbox" class="gv-checkbox" type="checkbox"/>
-                MD to HTML
-            </label>
-            <label class="publish-checkbox-label">
-                <input id="svg-checkbox" class="gv-checkbox" type="checkbox"/>
-                Compress SVG
-            </label>
-            <label class="publish-checkbox-label">
-                <input id="uri-checkbox" class="gv-checkbox" type="checkbox"/>
-                SVG to Data URI
-            </label>`
-        );
+        checkboxDiv.insertAdjacentHTML('beforeEnd', '{{clipboard.html}}');
 
         // Register a magic clipboard ui object with both checkboxes and a config method
         const Clipboard = {
