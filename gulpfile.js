@@ -42,8 +42,8 @@ function scripts() {
                 }),
             )
             .pipe(
-                replace('{{meter.html}}', () => {
-                    return `${fs.readFileSync('./public/meter.html', 'utf8')}`;
+                replace('{{menu.html}}', () => {
+                    return `${fs.readFileSync('./public/menu.html', 'utf8')}`;
                 }),
             )
             .pipe(rename({ suffix: '.min' }))

@@ -25,12 +25,8 @@
                     ></path></svg
             ></a>
         </p>
-        <p class="gv-menu_subtitle show-state on" id="subtitle">
-            Click <i>Advanced Options</i> to configure your upload
-        </p>
-
         <div class="gv-menu_options-wrapper">
-            <div class="gv-menu_options" id="options">
+            <div class="gv-menu_options" id="options-button">
                 <svg
                     class="bem-Svg"
                     aria-hidden="true"
@@ -48,7 +44,7 @@
                 Advanced options
             </div>
         </div>
-        <form class="gv-menu_form gv-menu_container open-state" id="form">
+        <form class="gv-menu_form gv-menu_container open-state" id="options-form">
             <div class="gv-menu_text-row">
                 <label class="gv-menu_label is-domain" for="domain"
                     >Release domain</label
@@ -95,14 +91,14 @@
                 />
                 <button
                     class="gv-menu_button show-state on"
-                    id="save"
+                    id="save-button"
                     type="button"
                 >
                     Save
                 </button>
                 <button
                     class="gv-menu_button show-state"
-                    id="restart"
+                    id="restart-button"
                     type="button"
                 >
                     Configured
@@ -111,12 +107,12 @@
         </form>
         <div class="gv-menu_container gv_menu-publish-wrapper">
             <div class="gv-menu_button-row">
-                <button class="gv-menu_button" id="close" type="button">
+                <button class="gv-menu_button" id="close-button" type="button">
                     Close
                 </button>
                 <button
                     class="gv-menu_button interact-state"
-                    id="publish"
+                    id="publish-button"
                     type="button"
                 >
                     Publish to green servers!
