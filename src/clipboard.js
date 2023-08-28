@@ -15,7 +15,7 @@
  */
 
 const SVGPragma = /^<\?xml version="1.0" encoding="UTF-8"\?>\s*/; // Using the xml version that always appears in illustrator SVG clipboards
-const MDPragma = /^<!--gv-markdown-->\n*/; // Using HTML comment syntax means it won't appear in the Obsidian preview mode or if converted to HTML another way
+const MDPragma = /^---\nGVExtension: true/; // Using YAML frontmatter syntax, any text starting with a YAML block is parsed
 
 // Wait for an embed modal to appear in the dom
 lookFor('.bem-EmbedEditor_Modal', 100).then(injectCheckbox);
@@ -84,9 +84,6 @@ function injectCheckbox(HTMLEmbed) {
             }
         }
 
-        // This is a severe minification, removes everything but the essential path data including colors, kerning, strokes and stroke effects
-        // Best for small icons or simple shapes (which are the best use-cases for inline SVG in Webflow)
-
         function convertSVG(svg) {
             svg = svg.trim();
             // remove xml, doctype, generator...
@@ -124,13 +121,10 @@ function injectCheckbox(HTMLEmbed) {
             // encode only unsafe symbols
             svg = svg.replace(/[%#<>?\[\\\]^`{|}]/g, encodeURIComponent);
             // build data uri
-            svg = `data:image/svg+xml,${svg}`;
+            svg = `url("data:image/svg+xml,${svg}")`;
             // ok, ship it!
             return svg;
         }
-
-        // This is a severe minification, removes everything but the essential path data including colors, kerning, strokes and stroke effects
-        // Best for small icons or simple shapes (which are the best use-cases for inline SVG in Webflow)
 
         function compressSVG(svg) {
             svg = svg.trim();
