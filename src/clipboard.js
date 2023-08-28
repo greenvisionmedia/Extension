@@ -15,7 +15,7 @@
  */
 
 const SVGPragma = /^<\?xml version="1.0" encoding="UTF-8"\?>\s*/; // Using the xml version that always appears in illustrator SVG clipboards
-const MDPragma = /^---\nGVExtension: true/; // Using YAML frontmatter syntax, any text starting with a YAML block is parsed
+const MDPragma = /^---\n(?:.*:.*\n)+---/; // Using YAML frontmatter syntax, any text starting with a YAML block with at least on key/val pair is parsed
 
 // Wait for an embed modal to appear in the dom
 lookFor('.bem-EmbedEditor_Modal', 100).then(injectCheckbox);
