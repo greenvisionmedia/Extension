@@ -6,7 +6,7 @@
 
 // PUBLISH MODAL ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// Set configuration defaults (in SCREAMING_SNAKE)
+// Set configuration defaults
 chrome.runtime.onInstalled.addListener(() => {
     chrome.storage.local.set({
         PROJECT: 'hello-world',
@@ -29,7 +29,7 @@ chrome.runtime.onConnect.addListener((port) => {
                     url: message.url,
                     filename: `${configData.PROJECT}-${dateFormat(
                         Date.now(),
-                        'MM-dd-yyyy-hh-mm'
+                        'MM-dd-yyyy-hh-mm',
                     )}`,
                 })
                 .then(() => {
@@ -76,24 +76,3 @@ function dateFormat(inputDate, format) {
 
     return format;
 }
-
-// CARBON METER ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// Store download size for use by carbon meter
-chrome.downloads.onCreated.addListener((item) => {
-    chrome.storage.local.set({
-        FILE_SIZE: item.fileSize,
-    });
-});
-
-// WEBSITE CHECKER ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// Respond to content script with icon change if website is hosted green
-chrome.runtime.onMessage.addListener(function (request, sender) {
-    if (request.action === 'changeIconActive') {
-        chrome.action.setIcon({
-            tabId: sender.tab.id,
-            path: '/icons/icon-active-32.png',
-        });
-    }
-});
