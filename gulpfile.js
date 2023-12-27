@@ -66,7 +66,7 @@ function move() {
         .src('./public/**/*')
         .pipe(
             gulp.dest(
-                '/mnt/c/users/taj/Desktop/Areas/Chrome Extension/public-clipboard',
+                '/mnt/c/users/public/Desktop/Reference/Chrome Extension/public-clipboard',
             ),
         );
 }
