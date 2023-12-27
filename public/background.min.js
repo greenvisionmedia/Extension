@@ -25,10 +25,7 @@ chrome.runtime.onConnect.addListener((port) => {
             chrome.downloads
                 .download({
                     url: message.url,
-                    filename: `${configData.PROJECT}-${dateFormat(
-                        Date.now(),
-                        'MM-dd-yyyy-hh-mm',
-                    )}`,
+                    filename: `${configData.PROJECT}-${message.date}`,
                 })
                 .then(() => {
                     port.postMessage({ response: 'pm-downloaded' });

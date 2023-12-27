@@ -4,6 +4,8 @@
  * Adds useful functions and event constructors for all components
  */
 
+console.log('Loaded index.js');
+
 // Query shorthand
 const get = (i) => document.getElementById(i);
 
@@ -17,6 +19,7 @@ function lookFor(lookClass, interval) {
     return new Promise((resolve) => {
         const look = setInterval(() => {
             const lookNode = document.querySelector(lookClass);
+            console.log('Looking...');
             if (lookNode) {
                 clearInterval(look);
                 resolve(lookNode);

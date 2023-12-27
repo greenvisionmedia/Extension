@@ -41,6 +41,7 @@ function scripts() {
             .pipe(rename({ suffix: '.min' }))
             .pipe(gulp.dest('./public'))
     );
+    s;
 }
 
 function port() {
@@ -56,7 +57,9 @@ function move() {
     return gulp
         .src('./public/**/*')
         .pipe(
-            gulp.dest('/mnt/c/users/taj/Desktop/Areas/Chrome Extension/public'),
+            gulp.dest(
+                '/mnt/c/users/public/Desktop/Reference/Chrome Extension/public',
+            ),
         );
 }
 

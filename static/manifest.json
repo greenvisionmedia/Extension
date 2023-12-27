@@ -11,11 +11,8 @@
     },
     "content_scripts": [
         {
-            "matches": ["https://webflow.com/design/*"],
-            "js": [
-                "index.min.js",
-                "menu.min.js"
-            ],
+            "matches": ["https://*.design.webflow.com/*"],
+            "js": ["index.min.js", "menu.min.js"],
             "css": ["style.min.css"]
         }
     ],
@@ -24,7 +21,6 @@
     },
     "permissions": ["storage", "scripting", "downloads"],
     "host_permissions": [
-        "https://webflow.com/design/*",
-        "https://*.greenvision.media/*"
+        "https://*.design.webflow.com/*"
     ]
 }

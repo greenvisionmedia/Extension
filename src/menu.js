@@ -21,6 +21,8 @@ function injectMenu(exportButton) {
     // Inject HTML for publish menu
     exportButton.insertAdjacentHTML('afterEnd', '{{menu.html}}');
 
+    console.log('insert func ran');
+
     // Get UI elements
     const menu = get('menu'),
         menuButton = get('menu-button'),
@@ -220,35 +222,32 @@ function injectMenu(exportButton) {
     }
 
     async function automateDownload(exportButton) {
-        // Automates the normal user download process using queries and .click()
-        const buttonRowSelector =
-            'div[style="display: flex; justify-content: space-between; flex: 0 1 auto;"]';
-        const exportModalSelector =
-            'div[style^="opacity: 1; position: fixed; background-color: rgba(0, 0, 0, 0.8)"]';
-
         exportButton.click();
-        const exportModal = await lookFor(exportModalSelector);
-        exportModal.style.display = 'none';
+        // Automates the normal user download process using queries and .click()
         const zipButton = await lookFor(
-            buttonRowSelector + ' button:nth-child(4)',
-            10,
+            '[data-automation-id="code-export-prepare-zip-button"]',
+            15,
         );
         zipButton.click();
-        const downloadButton = await lookFor(
-            buttonRowSelector + ' a[href^="blob:"]',
-            10,
-        );
+        const downloadButton = await lookFor('a[href^="blob:"]', 15);
         // Get the blob URL of the zip file the href attribute of the download button
         let downloadURL = downloadButton.href;
+        // Format the date nicely
+        let downloadDate = dateFormat(Date.now(), 'MM-dd-yyyy-hh-mm');
         // Exit the download modal
         document
-            .querySelector(buttonRowSelector + ' button:nth-child(3)')
+            .querySelector('[data-automation-id="modal-close-button"]')
             .click();
         // Open a port with the background script, so that we can use the download API
         let downloadPort = chrome.runtime.connect({ name: 'download-port' });
-        downloadPort.postMessage({ url: downloadURL });
+        downloadPort.postMessage({
+            url: downloadURL,
+            date: downloadDate,
+        });
+        // Close port and dispatch custom event
         downloadPort.onMessage.addListener(() => {
-            document.dispatchEvent(pmDownloaded);
+            document.dispatchEvent(gvDownloaded);
+            console.log('download event dispatched');
             downloadPort.disconnect();
         });
     }
