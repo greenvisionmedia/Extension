@@ -58,7 +58,7 @@ function move() {
         .src('./public/**/*')
         .pipe(
             gulp.dest(
-                '/mnt/c/users/public/Desktop/Reference/Chrome Extension/public',
+                '/mnt/c/users/public/Desktop/Projects/(GV) Chrome Extension/public',
             ),
         );
 }
