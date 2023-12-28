@@ -310,7 +310,7 @@ function injectMenu(exportButton) {
         off(saveButton);
         on(restartButton);
 
-        on(publishButton);
+        off(publishButton);
 
         await storeConfigData(); //Updates configuration data in chrome storage/GUI
         configureMenu();
