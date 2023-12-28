@@ -6,7 +6,7 @@
 
 // Set configuration defaults (in SCREAMING_SNAKE)
 chrome.runtime.onInstalled.addListener(() => {
-    chrome.storage.local.set({
+    chrome.storage.sync.set({
         PROJECT: 'hello-world',
         DOMAIN: 'hello.world',
         SITE_CODE: 'hw',
@@ -21,7 +21,7 @@ chrome.runtime.onInstalled.addListener(() => {
 chrome.runtime.onConnect.addListener((port) => {
     if (port.name == 'download-port') {
         port.onMessage.addListener(async (message) => {
-            const configData = await chrome.storage.local.get('PROJECT');
+            const configData = await chrome.storage.sync.get('PROJECT');
             chrome.downloads
                 .download({
                     url: message.url,

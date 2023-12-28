@@ -65,7 +65,7 @@ function injectMenu(exportButton) {
         off(optionsButton);
         off(optionsForm);
 
-        const configData = await chrome.storage.local.get([
+        const configData = await chrome.storage.sync.get([
             'PROJECT',
             'DOMAIN',
             'SITE_CODE',
